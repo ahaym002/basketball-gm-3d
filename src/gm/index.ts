@@ -6,7 +6,7 @@
 export * from './types';
 
 // Data
-export * from './data/teams';
+export { NBA_TEAMS, initializeAllTeams, createTeamFromTemplate } from './data/teams';
 export * from './data/players';
 
 // Systems
@@ -15,6 +15,8 @@ export * from './systems/DraftSystem';
 export * from './systems/SeasonSystem';
 export * from './systems/ContractSystem';
 export * from './systems/PlayerDevelopment';
+export * from './systems/CoachingSystem';
+export * from './systems/TeamStrategy';
 
 // Engine & UI
 export * from './LeagueEngine';

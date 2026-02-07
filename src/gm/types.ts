@@ -254,6 +254,9 @@ export interface Team {
   // History
   championships: number[];
   retiredNumbers: { number: number; playerName: string }[];
+  
+  // Strategy & Coaching (extended data)
+  strategy?: TeamStrategyData;
 }
 
 export interface CapException {
@@ -274,6 +277,15 @@ export interface Coach {
   motivation: number;        // 0-100
   offensiveScheme: 'pace-and-space' | 'motion' | 'isolation' | 'post-up' | 'balanced';
   defensiveScheme: 'switch-everything' | 'drop' | 'aggressive' | 'zone' | 'balanced';
+}
+
+// Extended Team with Strategy/Coaching - imported from strategy systems
+export interface TeamStrategyData {
+  philosophy?: import('./systems/TeamStrategy').TeamPhilosophy;
+  rotation?: import('./systems/TeamStrategy').RotationSettings;
+  playbook?: import('./systems/TeamStrategy').Playbook;
+  identity?: import('./systems/TeamStrategy').TeamIdentity;
+  coachingStaff?: import('./systems/CoachingSystem').CoachingStaff;
 }
 
 export interface Game {
@@ -393,6 +405,8 @@ export interface LeagueState {
 export type GMTab = 
   | 'dashboard'
   | 'roster'
+  | 'coaching'
+  | 'strategy'
   | 'freeAgency'
   | 'trade'
   | 'draft'

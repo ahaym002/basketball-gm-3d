@@ -2,13 +2,15 @@
 // League Engine - Ties All Systems Together
 // ============================================
 
-import { LeagueState, Season, Team, Player, DraftPick, LeagueSettings, Game } from './types';
+import { LeagueState, Season, Team, Player, DraftPick, LeagueSettings, Game, TeamStrategyData } from './types';
 import { NBA_TEAMS, initializeAllTeams, generateCoach } from './data/teams';
 import { generateRoster, generateFreeAgents, generatePlayer, emptySeasonStats } from './data/players';
 import { generateRegularSeasonSchedule, simulateGame, updateStandings, generatePlayoffBracket, selectAwards, getSeasonLeaders } from './systems/SeasonSystem';
 import { initializeDraft, runLottery, makePickSelection, simulateAIPick, DraftState } from './systems/DraftSystem';
 import { processOffseasonDevelopment, processTrainingCamp, rollForInjury, processInjuryRecovery } from './systems/PlayerDevelopment';
 import { CAP_VALUES, processEndOfSeason } from './systems/ContractSystem';
+import { generateCoachingStaff, ExtendedCoach, generateCoach as generateExtendedCoach } from './systems/CoachingSystem';
+import { createDefaultPhilosophy, createDefaultPlaybook, createDefaultRotation, createDefaultIdentity, TeamPhilosophy, RotationSettings } from './systems/TeamStrategy';
 
 export class LeagueEngine {
   private state: LeagueState;
@@ -69,6 +71,28 @@ export class LeagueEngine {
           currentTeamId: team.id,
           isSwap: false
         });
+      }
+      
+      // Initialize coaching staff and team strategy
+      const coachingStaff = generateCoachingStaff();
+      team.coach = coachingStaff.headCoach;
+      
+      const rosterPlayers = roster.map(id => typeof id === 'string' ? players[id] : id).filter(Boolean) as Player[];
+      
+      team.strategy = {
+        philosophy: createDefaultPhilosophy(),
+        rotation: createDefaultRotation(rosterPlayers),
+        playbook: createDefaultPlaybook(),
+        identity: createDefaultIdentity(),
+        coachingStaff
+      };
+      
+      // Align philosophy with coach preferences
+      if (team.strategy.philosophy && coachingStaff.headCoach.preferredOffense) {
+        team.strategy.philosophy.offensiveSystem = coachingStaff.headCoach.preferredOffense;
+        team.strategy.philosophy.defensiveScheme = coachingStaff.headCoach.preferredDefense;
+        team.strategy.philosophy.pace = coachingStaff.headCoach.preferredPace;
+        team.strategy.philosophy.developmentFocus = coachingStaff.headCoach.developmentFocus;
       }
     }
     

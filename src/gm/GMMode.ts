@@ -10,6 +10,14 @@ import {
 } from './systems/TradeSystem';
 import { getCapSituation, CAP_VALUES, createContractOffer, signPlayer } from './systems/ContractSystem';
 import { DraftState } from './systems/DraftSystem';
+import { 
+  ExtendedCoach, generateCoachMarket, generateAssistantCoach, hireCoach, fireCoach,
+  calculateCoachImpact, CoachingStaff, AssistantCoach
+} from './systems/CoachingSystem';
+import {
+  TeamPhilosophy, RotationSettings, Playbook, TeamIdentity,
+  calculatePlayerFit, calculateTeamFit, PlayerSystemFit
+} from './systems/TeamStrategy';
 
 export class GMMode {
   private engine: LeagueEngine;
@@ -88,6 +96,8 @@ export class GMMode {
     const tabs: { id: GMTab; label: string; icon: string }[] = [
       { id: 'dashboard', label: 'Dashboard', icon: '📊' },
       { id: 'roster', label: 'Roster', icon: '👥' },
+      { id: 'coaching', label: 'Coaching', icon: '🎓' },
+      { id: 'strategy', label: 'Strategy', icon: '📋' },
       { id: 'trade', label: 'Trade', icon: '🔄' },
       { id: 'freeAgency', label: 'Free Agency', icon: '📝' },
       { id: 'draft', label: 'Draft', icon: '🎯' },
@@ -109,6 +119,8 @@ export class GMMode {
     switch (this.currentTab) {
       case 'dashboard': return this.renderDashboard();
       case 'roster': return this.renderRoster();
+      case 'coaching': return this.renderCoaching();
+      case 'strategy': return this.renderStrategy();
       case 'trade': return this.renderTrade();
       case 'freeAgency': return this.renderFreeAgency();
       case 'draft': return this.renderDraft();
@@ -994,6 +1006,502 @@ export class GMMode {
         `).join('')}
       </ol>
     `;
+  }
+
+  // ==================== COACHING ====================
+  private renderCoaching(): string {
+    const team = this.engine.getUserTeam();
+    const state = this.engine.getState();
+    const strategy = team.strategy;
+    const coachingStaff = strategy?.coachingStaff;
+    const headCoach = coachingStaff?.headCoach as ExtendedCoach | undefined;
+    
+    if (!headCoach) {
+      return '<div class="coaching-section"><p>No coaching data available</p></div>';
+    }
+    
+    const roster = team.roster.map(id => state.players[id]).filter(Boolean);
+    const coachImpact = coachingStaff ? calculateCoachImpact(headCoach, coachingStaff.assistants, roster) : null;
+    
+    return `
+      <div class="coaching-section">
+        <div class="coach-header">
+          <h2>🎓 Coaching Staff</h2>
+        </div>
+        
+        <!-- Head Coach -->
+        <div class="coach-card head-coach">
+          <div class="coach-info">
+            <h3>Head Coach</h3>
+            <div class="coach-name">${headCoach.name}</div>
+            <div class="coach-meta">Age ${headCoach.age} | ${headCoach.ratings?.experienceYears || 0} years experience</div>
+            ${headCoach.ratings?.championships ? `<div class="coach-rings">🏆 × ${headCoach.ratings.championships}</div>` : ''}
+          </div>
+          
+          <div class="coach-ratings">
+            <h4>Ratings</h4>
+            <div class="rating-grid">
+              <div class="rating-item">
+                <span class="rating-label">Offense</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: ${headCoach.ratings?.offense || 50}%"></div>
+                </div>
+                <span class="rating-value">${headCoach.ratings?.offense || 50}</span>
+              </div>
+              <div class="rating-item">
+                <span class="rating-label">Defense</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: ${headCoach.ratings?.defense || 50}%"></div>
+                </div>
+                <span class="rating-value">${headCoach.ratings?.defense || 50}</span>
+              </div>
+              <div class="rating-item">
+                <span class="rating-label">Development</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: ${headCoach.ratings?.playerDevelopment || 50}%"></div>
+                </div>
+                <span class="rating-value">${headCoach.ratings?.playerDevelopment || 50}</span>
+              </div>
+              <div class="rating-item">
+                <span class="rating-label">Game Mgmt</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: ${headCoach.ratings?.gameManagement || 50}%"></div>
+                </div>
+                <span class="rating-value">${headCoach.ratings?.gameManagement || 50}</span>
+              </div>
+              <div class="rating-item">
+                <span class="rating-label">Motivation</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: ${headCoach.ratings?.motivation || 50}%"></div>
+                </div>
+                <span class="rating-value">${headCoach.ratings?.motivation || 50}</span>
+              </div>
+              <div class="rating-item">
+                <span class="rating-label">Recruiting</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: ${headCoach.ratings?.recruiting || 50}%"></div>
+                </div>
+                <span class="rating-value">${headCoach.ratings?.recruiting || 50}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="coach-traits">
+            <h4>Traits</h4>
+            <div class="trait-list">
+              ${(headCoach.traits || []).map(trait => `
+                <span class="trait-badge">${this.formatTrait(trait)}</span>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="coach-style">
+            <h4>Preferred Style</h4>
+            <p><strong>Offense:</strong> ${this.formatSystem(headCoach.preferredOffense)}</p>
+            <p><strong>Defense:</strong> ${this.formatScheme(headCoach.preferredDefense)}</p>
+            <p><strong>Pace:</strong> ${this.formatPace(headCoach.preferredPace)}</p>
+          </div>
+          
+          <div class="coach-contract">
+            <h4>Contract</h4>
+            <p>$${((headCoach.contract?.salary || 0) / 1000000).toFixed(1)}M / ${headCoach.contract?.years || 0} years</p>
+            <p class="buyout">Buyout: $${((headCoach.contract?.buyout || 0) / 1000000).toFixed(1)}M</p>
+          </div>
+          
+          <div class="coach-actions">
+            <button class="btn btn-secondary" id="extend-coach">Extend Contract</button>
+            <button class="btn btn-danger" id="fire-coach">Fire Coach</button>
+          </div>
+        </div>
+        
+        ${coachImpact ? `
+          <div class="coach-impact">
+            <h3>Coaching Impact</h3>
+            <div class="impact-grid">
+              <div class="impact-item ${coachImpact.offensiveBonus >= 0 ? 'positive' : 'negative'}">
+                <span class="impact-value">${coachImpact.offensiveBonus >= 0 ? '+' : ''}${coachImpact.offensiveBonus}</span>
+                <span class="impact-label">Offensive Rating</span>
+              </div>
+              <div class="impact-item ${coachImpact.defensiveBonus >= 0 ? 'positive' : 'negative'}">
+                <span class="impact-value">${coachImpact.defensiveBonus >= 0 ? '+' : ''}${coachImpact.defensiveBonus}</span>
+                <span class="impact-label">Defensive Rating</span>
+              </div>
+              <div class="impact-item ${coachImpact.developmentBonus >= 0 ? 'positive' : 'negative'}">
+                <span class="impact-value">${coachImpact.developmentBonus >= 0 ? '+' : ''}${coachImpact.developmentBonus}%</span>
+                <span class="impact-label">Player Development</span>
+              </div>
+              <div class="impact-item ${coachImpact.moraleBonus >= 0 ? 'positive' : 'negative'}">
+                <span class="impact-value">${coachImpact.moraleBonus >= 0 ? '+' : ''}${coachImpact.moraleBonus}</span>
+                <span class="impact-label">Team Morale</span>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+        
+        <!-- Assistant Coaches -->
+        <div class="assistants-section">
+          <h3>Assistant Coaches (${coachingStaff?.assistants.length || 0}/${coachingStaff?.maxAssistants || 6})</h3>
+          <div class="assistant-grid">
+            ${(coachingStaff?.assistants || []).map(assistant => `
+              <div class="assistant-card">
+                <div class="assistant-name">${assistant.name}</div>
+                <div class="assistant-specialty">${this.formatSpecialty(assistant.specialty)}</div>
+                <div class="assistant-rating">Rating: ${assistant.rating}</div>
+                <div class="assistant-salary">$${(assistant.salary / 1000000).toFixed(1)}M/yr</div>
+                ${assistant.potentialHeadCoach ? '<span class="hc-potential">⭐ HC Potential</span>' : ''}
+                <button class="btn btn-sm btn-danger" data-action="fire-assistant" data-id="${assistant.id}">Fire</button>
+              </div>
+            `).join('')}
+            ${(coachingStaff?.assistants.length || 0) < (coachingStaff?.maxAssistants || 6) ? `
+              <div class="assistant-card add-new">
+                <button class="btn btn-primary" id="hire-assistant">+ Hire Assistant</button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <!-- Coach Market -->
+        <div class="coach-market">
+          <h3>Available Coaches</h3>
+          <button class="btn btn-secondary" id="view-coach-market">Browse Coach Market</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ==================== STRATEGY ====================
+  private renderStrategy(): string {
+    const team = this.engine.getUserTeam();
+    const state = this.engine.getState();
+    const strategy = team.strategy;
+    const philosophy = strategy?.philosophy;
+    const rotation = strategy?.rotation;
+    const identity = strategy?.identity;
+    const headCoach = strategy?.coachingStaff?.headCoach as ExtendedCoach | undefined;
+    
+    if (!philosophy) {
+      return '<div class="strategy-section"><p>No strategy data available</p></div>';
+    }
+    
+    const roster = team.roster.map(id => state.players[id]).filter(Boolean);
+    const teamFit = headCoach ? calculateTeamFit(roster, philosophy, headCoach) : null;
+    
+    return `
+      <div class="strategy-section">
+        <h2>📋 Team Strategy & Philosophy</h2>
+        
+        <!-- Offensive System -->
+        <div class="strategy-card">
+          <h3>⚔️ Offensive System</h3>
+          <div class="system-selector">
+            <select id="offensive-system" class="system-select">
+              <option value="motion" ${philosophy.offensiveSystem === 'motion' ? 'selected' : ''}>Motion Offense</option>
+              <option value="iso-heavy" ${philosophy.offensiveSystem === 'iso-heavy' ? 'selected' : ''}>Isolation Heavy</option>
+              <option value="pick-and-roll" ${philosophy.offensiveSystem === 'pick-and-roll' ? 'selected' : ''}>Pick & Roll</option>
+              <option value="pace-and-space" ${philosophy.offensiveSystem === 'pace-and-space' ? 'selected' : ''}>Pace & Space</option>
+              <option value="post-up" ${philosophy.offensiveSystem === 'post-up' ? 'selected' : ''}>Post-Up</option>
+              <option value="princeton" ${philosophy.offensiveSystem === 'princeton' ? 'selected' : ''}>Princeton</option>
+              <option value="triangle" ${philosophy.offensiveSystem === 'triangle' ? 'selected' : ''}>Triangle</option>
+              <option value="balanced" ${philosophy.offensiveSystem === 'balanced' ? 'selected' : ''}>Balanced</option>
+            </select>
+            <p class="system-description">${this.getSystemDescription(philosophy.offensiveSystem)}</p>
+          </div>
+        </div>
+        
+        <!-- Defensive Scheme -->
+        <div class="strategy-card">
+          <h3>🛡️ Defensive Scheme</h3>
+          <div class="system-selector">
+            <select id="defensive-scheme" class="system-select">
+              <option value="man-to-man" ${philosophy.defensiveScheme === 'man-to-man' ? 'selected' : ''}>Man-to-Man</option>
+              <option value="zone-2-3" ${philosophy.defensiveScheme === 'zone-2-3' ? 'selected' : ''}>2-3 Zone</option>
+              <option value="zone-3-2" ${philosophy.defensiveScheme === 'zone-3-2' ? 'selected' : ''}>3-2 Zone</option>
+              <option value="switch-everything" ${philosophy.defensiveScheme === 'switch-everything' ? 'selected' : ''}>Switch Everything</option>
+              <option value="drop-coverage" ${philosophy.defensiveScheme === 'drop-coverage' ? 'selected' : ''}>Drop Coverage</option>
+              <option value="aggressive-blitz" ${philosophy.defensiveScheme === 'aggressive-blitz' ? 'selected' : ''}>Aggressive Blitz</option>
+              <option value="pack-the-paint" ${philosophy.defensiveScheme === 'pack-the-paint' ? 'selected' : ''}>Pack the Paint</option>
+            </select>
+            <p class="system-description">${this.getSchemeDescription(philosophy.defensiveScheme)}</p>
+          </div>
+        </div>
+        
+        <!-- Pace & Style -->
+        <div class="strategy-card">
+          <h3>⏱️ Pace & Style</h3>
+          <div class="pace-slider">
+            <label>Tempo</label>
+            <input type="range" id="pace-setting" min="0" max="4" 
+                   value="${['slowest', 'slow', 'moderate', 'fast', 'fastest'].indexOf(philosophy.pace)}" 
+                   class="slider">
+            <div class="pace-labels">
+              <span>Slowest</span>
+              <span>Slow</span>
+              <span>Moderate</span>
+              <span>Fast</span>
+              <span>Fastest</span>
+            </div>
+          </div>
+          
+          <div class="priority-sliders">
+            <div class="priority-item">
+              <label>3-Point Focus</label>
+              <input type="range" id="priority-3pt" min="0" max="100" value="${philosophy.priorities.threePointShooting}" class="slider">
+              <span>${philosophy.priorities.threePointShooting}%</span>
+            </div>
+            <div class="priority-item">
+              <label>Inside Paint</label>
+              <input type="range" id="priority-paint" min="0" max="100" value="${philosophy.priorities.insidePaint}" class="slider">
+              <span>${philosophy.priorities.insidePaint}%</span>
+            </div>
+            <div class="priority-item">
+              <label>Fast Break</label>
+              <input type="range" id="priority-fastbreak" min="0" max="100" value="${philosophy.priorities.fastBreak}" class="slider">
+              <span>${philosophy.priorities.fastBreak}%</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Development Philosophy -->
+        <div class="strategy-card">
+          <h3>📈 Development Philosophy</h3>
+          <div class="philosophy-buttons">
+            <button class="phil-btn ${philosophy.developmentFocus === 'win-now' ? 'active' : ''}" data-focus="win-now">
+              🏆 Win Now
+              <small>Play veterans, maximize current roster</small>
+            </button>
+            <button class="phil-btn ${philosophy.developmentFocus === 'balanced' ? 'active' : ''}" data-focus="balanced">
+              ⚖️ Balanced
+              <small>Mix of development and winning</small>
+            </button>
+            <button class="phil-btn ${philosophy.developmentFocus === 'develop-youth' ? 'active' : ''}" data-focus="develop-youth">
+              🌱 Develop Youth
+              <small>Prioritize young player minutes</small>
+            </button>
+            <button class="phil-btn ${philosophy.developmentFocus === 'rebuild' ? 'active' : ''}" data-focus="rebuild">
+              🔄 Rebuild
+              <small>Full youth movement</small>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Rotation Settings -->
+        <div class="strategy-card">
+          <h3>🔄 Rotation Settings</h3>
+          <div class="rotation-controls">
+            <div class="rotation-item">
+              <label>Rotation Depth</label>
+              <input type="range" id="bench-depth" min="8" max="12" value="${philosophy.benchDepth}" class="slider">
+              <span>${philosophy.benchDepth} players</span>
+            </div>
+            <div class="rotation-item">
+              <label>Star Usage Rate</label>
+              <input type="range" id="star-usage" min="20" max="40" value="${philosophy.starUsageRate}" class="slider">
+              <span>${philosophy.starUsageRate}%</span>
+            </div>
+          </div>
+          
+          <div class="load-management">
+            <h4>Load Management</h4>
+            <label class="toggle">
+              <input type="checkbox" id="load-mgmt-enabled" ${rotation?.loadManagement.enabled ? 'checked' : ''}>
+              <span>Enable Load Management</span>
+            </label>
+            ${rotation?.loadManagement.enabled ? `
+              <div class="load-options">
+                <label>
+                  Rest games per month:
+                  <input type="number" id="rest-games" value="${rotation.loadManagement.restGamesPerMonth}" min="0" max="4">
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" id="b2b-rest" ${rotation.loadManagement.backToBackRest ? 'checked' : ''}>
+                  <span>Rest on back-to-backs</span>
+                </label>
+                <label>
+                  Minutes limit:
+                  <input type="number" id="minutes-limit" value="${rotation.loadManagement.minutesLimit}" min="28" max="40">
+                </label>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <!-- Team Identity -->
+        ${identity ? `
+          <div class="strategy-card identity-card">
+            <h3>🏛️ Team Identity</h3>
+            <div class="identity-info">
+              <p><strong>Established:</strong> ${identity.establishedYears} years</p>
+              <p><strong>Offensive Identity:</strong> ${this.formatIdentity(identity.offensiveIdentity)}</p>
+              <p><strong>Defensive Identity:</strong> ${this.formatIdentity(identity.defensiveIdentity)}</p>
+              <p><strong>Culture:</strong> ${this.formatCulture(identity.culture)}</p>
+            </div>
+            <div class="reputation-grid">
+              <div class="rep-item">
+                <span class="rep-label">Offense Rank</span>
+                <span class="rep-value">#${identity.leaguePerception.offensiveRanking}</span>
+              </div>
+              <div class="rep-item">
+                <span class="rep-label">Defense Rank</span>
+                <span class="rep-value">#${identity.leaguePerception.defensiveRanking}</span>
+              </div>
+              <div class="rep-item">
+                <span class="rep-label">Clutch Rating</span>
+                <span class="rep-value">${identity.leaguePerception.clutchRating}</span>
+              </div>
+              <div class="rep-item">
+                <span class="rep-label">Home Court</span>
+                <span class="rep-value">${identity.leaguePerception.homeCourtAdvantage}</span>
+              </div>
+            </div>
+            ${identity.knownFor.length > 0 ? `
+              <div class="known-for">
+                <strong>Known For:</strong>
+                ${identity.knownFor.map(k => `<span class="known-tag">${k}</span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+        
+        <!-- Player Fit Analysis -->
+        ${teamFit ? `
+          <div class="strategy-card fit-analysis">
+            <h3>🧩 System Fit Analysis</h3>
+            <div class="fit-summary">
+              <div class="fit-score">
+                <span class="score-value ${teamFit.averageFit >= 60 ? 'good' : teamFit.averageFit >= 45 ? 'okay' : 'poor'}">${teamFit.averageFit}</span>
+                <span class="score-label">Average Team Fit</span>
+              </div>
+            </div>
+            
+            <div class="fit-columns">
+              <div class="fit-column">
+                <h4>✅ Best Fits</h4>
+                ${teamFit.bestFits.map(f => `
+                  <div class="fit-player good">
+                    <span class="player-name">${f.playerName}</span>
+                    <span class="fit-value">${f.overallFit}</span>
+                    <div class="fit-details">${f.playerStrengths.slice(0, 2).join(', ')}</div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="fit-column">
+                <h4>❌ Worst Fits</h4>
+                ${teamFit.worstFits.map(f => `
+                  <div class="fit-player poor">
+                    <span class="player-name">${f.playerName}</span>
+                    <span class="fit-value">${f.overallFit}</span>
+                    <div class="fit-details">${f.gaps.slice(0, 2).join(', ')}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            
+            ${teamFit.recommendations.length > 0 ? `
+              <div class="fit-recommendations">
+                <h4>💡 Recommendations</h4>
+                <ul>
+                  ${teamFit.recommendations.map(r => `<li>${r}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+        
+        <div class="strategy-actions">
+          <button class="btn btn-primary" id="save-strategy">Save Changes</button>
+          <button class="btn btn-secondary" id="reset-strategy">Reset to Defaults</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Helper formatting methods
+  private formatTrait(trait: string): string {
+    return trait.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  private formatSystem(system: string): string {
+    const names: Record<string, string> = {
+      'motion': 'Motion Offense',
+      'iso-heavy': 'Isolation Heavy',
+      'pick-and-roll': 'Pick & Roll',
+      'pace-and-space': 'Pace & Space',
+      'post-up': 'Post-Up',
+      'princeton': 'Princeton Offense',
+      'triangle': 'Triangle Offense',
+      'balanced': 'Balanced'
+    };
+    return names[system] || system;
+  }
+
+  private formatScheme(scheme: string): string {
+    const names: Record<string, string> = {
+      'man-to-man': 'Man-to-Man',
+      'zone-2-3': '2-3 Zone',
+      'zone-3-2': '3-2 Zone',
+      'switch-everything': 'Switch Everything',
+      'drop-coverage': 'Drop Coverage',
+      'aggressive-blitz': 'Aggressive Blitz',
+      'pack-the-paint': 'Pack the Paint'
+    };
+    return names[scheme] || scheme;
+  }
+
+  private formatPace(pace: string): string {
+    const names: Record<string, string> = {
+      'fastest': 'Fastest (105+ possessions)',
+      'fast': 'Fast (100-105)',
+      'moderate': 'Moderate (95-100)',
+      'slow': 'Slow (90-95)',
+      'slowest': 'Slowest (<90)'
+    };
+    return names[pace] || pace;
+  }
+
+  private formatSpecialty(specialty: string): string {
+    const names: Record<string, string> = {
+      'offense': '⚔️ Offense',
+      'defense': '🛡️ Defense',
+      'player-development': '📈 Player Development',
+      'analytics': '📊 Analytics',
+      'shooting': '🎯 Shooting'
+    };
+    return names[specialty] || specialty;
+  }
+
+  private formatIdentity(identity: string): string {
+    return identity.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  private formatCulture(culture: string): string {
+    return culture.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  private getSystemDescription(system: string): string {
+    const descriptions: Record<string, string> = {
+      'motion': 'Ball movement, cutting, and off-ball screens. Requires high basketball IQ.',
+      'iso-heavy': 'Let your stars create. Works best with elite scorers.',
+      'pick-and-roll': 'PnR heavy offense. Need a good ball handler and rolling big.',
+      'pace-and-space': 'Modern 3-point focused offense. Spread the floor, shoot threes.',
+      'post-up': 'Inside-out offense. Feed the post, kick for threes.',
+      'princeton': 'Backdoor cuts and misdirection. Requires discipline and execution.',
+      'triangle': 'Classic triangle offense. Versatile but complex.',
+      'balanced': 'Mix of everything. Adaptable but no clear identity.'
+    };
+    return descriptions[system] || '';
+  }
+
+  private getSchemeDescription(scheme: string): string {
+    const descriptions: Record<string, string> = {
+      'man-to-man': 'Traditional defense. Each player guards one opponent.',
+      'zone-2-3': 'Two up top, three along the baseline. Protects paint.',
+      'zone-3-2': 'Three up top, two down low. Guards perimeter better.',
+      'switch-everything': 'Switch all screens. Requires versatile defenders.',
+      'drop-coverage': 'Big drops back on PnR. Gives up mid-range.',
+      'aggressive-blitz': 'Trap and gamble for steals. High risk, high reward.',
+      'pack-the-paint': 'Protect the rim, give up threes. Need shot blockers.'
+    };
+    return descriptions[scheme] || '';
   }
 
   // ==================== EVENT BINDINGS ====================
