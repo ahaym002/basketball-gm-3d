@@ -415,4 +415,5 @@ export type GMTab =
   | 'finances'
   | 'playoffs'
   | 'awards'
-  | 'history';
+  | 'history'
+  | 'expansion';

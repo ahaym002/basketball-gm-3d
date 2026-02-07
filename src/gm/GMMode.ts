@@ -18,6 +18,13 @@ import {
   TeamPhilosophy, RotationSettings, Playbook, TeamIdentity,
   calculatePlayerFit, calculateTeamFit, PlayerSystemFit
 } from './systems/TeamStrategy';
+import {
+  EXPANSION_CITIES, TEAM_NAME_SUGGESTIONS, COLOR_PRESETS,
+  ExpansionCity, ExpansionTeamConfig, ExpansionDraftState,
+  calculateExpansionFee, createExpansionTeam, initializeExpansionDraft,
+  selectExpansionPlayer, autoSelectExpansionPlayer, fillExpansionRoster,
+  determineExpansionDivision, validateExpansionConfig, generateExpansionTeamId
+} from './systems/ExpansionSystem';
 
 export class GMMode {
   private engine: LeagueEngine;
@@ -31,6 +38,18 @@ export class GMMode {
     selectedTeam: null,
     userPackage: { players: [], picks: [], cash: 0 },
     otherPackage: { players: [], picks: [], cash: 0 }
+  };
+  
+  private expansionState: {
+    phase: 'create' | 'draft' | 'complete';
+    config: Partial<ExpansionTeamConfig>;
+    draftState: ExpansionDraftState | null;
+    newTeam: Team | null;
+  } = {
+    phase: 'create',
+    config: {},
+    draftState: null,
+    newTeam: null
   };
 
   constructor() {
@@ -104,7 +123,8 @@ export class GMMode {
       { id: 'standings', label: 'Standings', icon: '🏆' },
       { id: 'schedule', label: 'Schedule', icon: '📅' },
       { id: 'finances', label: 'Finances', icon: '💰' },
-      { id: 'awards', label: 'Awards', icon: '🏅' }
+      { id: 'awards', label: 'Awards', icon: '🏅' },
+      { id: 'expansion', label: 'Expansion', icon: '🏗️' }
     ];
     
     return tabs.map(tab => `
@@ -128,6 +148,7 @@ export class GMMode {
       case 'schedule': return this.renderSchedule();
       case 'finances': return this.renderFinances();
       case 'awards': return this.renderAwards();
+      case 'expansion': return this.renderExpansion();
       default: return '';
     }
   }

@@ -17,6 +17,7 @@ export * from './systems/ContractSystem';
 export * from './systems/PlayerDevelopment';
 export * from './systems/CoachingSystem';
 export * from './systems/TeamStrategy';
+export * from './systems/ExpansionSystem';
 
 // Engine & UI
 export * from './LeagueEngine';
