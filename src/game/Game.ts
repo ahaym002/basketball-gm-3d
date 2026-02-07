@@ -6,7 +6,6 @@ import { InputManager } from './InputManager';
 import { PhysicsWorld } from './PhysicsWorld';
 import { GameState } from './GameState';
 import { UI } from '../ui/UI';
-import { GMMode } from '../gm/GMMode';
 
 export class Game {
   private renderer: THREE.WebGLRenderer;
@@ -19,9 +18,8 @@ export class Game {
   private physics: PhysicsWorld;
   private gameState: GameState;
   private ui: UI;
-  private gmMode: GMMode;
   private clock: THREE.Clock;
-  private isGMMode: boolean = false;
+  public isGMMode: boolean = false;
 
   constructor() {
     // Setup renderer
@@ -67,10 +65,10 @@ export class Game {
     this.setupLighting();
     
     // Setup UI
-    this.ui = new UI(this.gameState, () => this.toggleGMMode());
-    
-    // Setup GM Mode
-    this.gmMode = new GMMode(this.gameState);
+    this.ui = new UI(this.gameState, () => {
+      // GM Mode is handled by main.ts now
+      this.isGMMode = !this.isGMMode;
+    });
   }
 
   private createPlayers(): void {
@@ -163,15 +161,6 @@ export class Game {
     hoopLight2.penumbra = 0.3;
     this.scene.add(hoopLight2);
     this.scene.add(hoopLight2.target);
-  }
-
-  private toggleGMMode(): void {
-    this.isGMMode = !this.isGMMode;
-    if (this.isGMMode) {
-      this.gmMode.show();
-    } else {
-      this.gmMode.hide();
-    }
   }
 
   public start(): void {
