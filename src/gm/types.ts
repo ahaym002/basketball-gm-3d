@@ -414,6 +414,7 @@ export type GMTab =
   | 'schedule'
   | 'finances'
   | 'playoffs'
+  | 'allstar'
   | 'awards'
   | 'history'
   | 'expansion';

@@ -120,9 +120,11 @@ export class GMMode {
       { id: 'trade', label: 'Trade', icon: '🔄' },
       { id: 'freeAgency', label: 'Free Agency', icon: '📝' },
       { id: 'draft', label: 'Draft', icon: '🎯' },
-      { id: 'standings', label: 'Standings', icon: '🏆' },
+      { id: 'standings', label: 'Standings', icon: '📆' },
+      { id: 'playoffs', label: 'Playoffs', icon: '🏆' },
       { id: 'schedule', label: 'Schedule', icon: '📅' },
       { id: 'finances', label: 'Finances', icon: '💰' },
+      { id: 'allstar', label: 'All-Star', icon: '⭐' },
       { id: 'awards', label: 'Awards', icon: '🏅' },
       { id: 'expansion', label: 'Expansion', icon: '🏗️' }
     ];
@@ -145,8 +147,10 @@ export class GMMode {
       case 'freeAgency': return this.renderFreeAgency();
       case 'draft': return this.renderDraft();
       case 'standings': return this.renderStandings();
+      case 'playoffs': return this.renderPlayoffs();
       case 'schedule': return this.renderSchedule();
       case 'finances': return this.renderFinances();
+      case 'allstar': return this.renderAllStar();
       case 'awards': return this.renderAwards();
       case 'expansion': return this.renderExpansion();
       default: return '';
@@ -974,41 +978,391 @@ export class GMMode {
     `;
   }
 
+  // ==================== PLAYOFFS ====================
+  private renderPlayoffs(): string {
+    const state = this.engine.getState();
+    const playoffStatus = this.engine.getPlayoffStatus();
+    
+    if (state.currentSeason.phase !== 'playoffs' && !state.currentSeason.playoffs) {
+      return `
+        <div class="playoffs-section">
+          <div class="playoffs-waiting">
+            <h2>🏆 NBA Playoffs</h2>
+            <div class="waiting-content">
+              <div class="trophy-icon">🏆</div>
+              <p>The playoffs have not started yet.</p>
+              <p class="sub-text">Complete the regular season to begin the journey to the championship.</p>
+              ${state.currentSeason.phase === 'regular' ? `
+                <div class="season-progress">
+                  <div class="progress-bar-large">
+                    <div class="progress-fill" style="width: ${this.engine.getSeasonProgress().percent}%"></div>
+                  </div>
+                  <p>${this.engine.getSeasonProgress().percent}% of regular season complete</p>
+                </div>
+                <button class="btn btn-primary btn-lg" id="sim-to-playoffs">⏩ Simulate to Playoffs</button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    return `
+      <div class="playoffs-section">
+        <div class="playoffs-header">
+          <h2>🏆 NBA Playoffs ${state.currentSeason.year}</h2>
+          <div class="playoff-round-indicator">
+            <span class="current-round">${playoffStatus.currentRoundName}</span>
+          </div>
+        </div>
+        
+        ${playoffStatus.champion ? `
+          <div class="champion-banner">
+            <div class="champion-trophy">🏆</div>
+            <h3>${playoffStatus.champion.name}</h3>
+            <p>NBA CHAMPIONS</p>
+          </div>
+        ` : ''}
+        
+        <div class="playoff-bracket">
+          ${this.renderBracketColumn('Eastern Conference', playoffStatus.matchups.filter(m => m.conference === 'Eastern'), state)}
+          ${this.renderFinalsColumn(playoffStatus.matchups.filter(m => m.conference === 'Finals'), state)}
+          ${this.renderBracketColumn('Western Conference', playoffStatus.matchups.filter(m => m.conference === 'Western'), state)}
+        </div>
+        
+        <div class="playoffs-actions">
+          ${!playoffStatus.champion ? `
+            <button class="btn btn-primary" id="sim-playoff-game">▶ Sim Next Game</button>
+            <button class="btn btn-secondary" id="sim-playoff-round">⏩ Sim Round</button>
+            <button class="btn btn-accent" id="sim-all-playoffs">🏆 Sim All Playoffs</button>
+          ` : `
+            <button class="btn btn-primary" id="end-season-btn">Continue to Offseason</button>
+          `}
+        </div>
+      </div>
+    `;
+  }
+  
+  private renderBracketColumn(title: string, matchups: any[], state: any): string {
+    const round1 = matchups.filter(m => m.round === 1);
+    const round2 = matchups.filter(m => m.round === 2);
+    const round3 = matchups.filter(m => m.round === 3);
+    
+    return `
+      <div class="bracket-column">
+        <h3 class="conference-title">${title}</h3>
+        <div class="bracket-rounds">
+          <div class="bracket-round round-1">
+            <div class="round-label">First Round</div>
+            ${round1.map(m => this.renderMatchupCard(m, state)).join('')}
+          </div>
+          <div class="bracket-round round-2">
+            <div class="round-label">Conf. Semis</div>
+            ${round2.length > 0 ? round2.map(m => this.renderMatchupCard(m, state)).join('') : this.renderEmptyMatchups(2)}
+          </div>
+          <div class="bracket-round round-3">
+            <div class="round-label">Conf. Finals</div>
+            ${round3.length > 0 ? round3.map(m => this.renderMatchupCard(m, state)).join('') : this.renderEmptyMatchups(1)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  private renderFinalsColumn(matchups: any[], state: any): string {
+    const finals = matchups.filter(m => m.round === 4);
+    
+    return `
+      <div class="bracket-column finals-column">
+        <h3 class="conference-title">NBA Finals</h3>
+        <div class="finals-matchup-container">
+          ${finals.length > 0 ? finals.map(m => this.renderMatchupCard(m, state, true)).join('') : this.renderEmptyMatchups(1, true)}
+        </div>
+      </div>
+    `;
+  }
+  
+  private renderMatchupCard(matchup: any, state: any, isFinals: boolean = false): string {
+    const team1 = state.teams[matchup.team1.id];
+    const team2 = state.teams[matchup.team2.id];
+    const userTeamId = state.userTeamId;
+    const isComplete = !!matchup.winner;
+    
+    return `
+      <div class="matchup-card ${isFinals ? 'finals-matchup' : ''} ${isComplete ? 'complete' : 'active'}">
+        <div class="matchup-team ${matchup.team1.id === userTeamId ? 'user-team' : ''} ${matchup.winner === matchup.team1.id ? 'winner' : ''}">
+          <span class="seed">${matchup.team1.seed}</span>
+          <span class="team-abbr" style="color: ${team1?.colors.primary || '#fff'}">${team1?.abbreviation || matchup.team1.id}</span>
+          <span class="team-wins">${matchup.team1.wins}</span>
+        </div>
+        <div class="matchup-team ${matchup.team2.id === userTeamId ? 'user-team' : ''} ${matchup.winner === matchup.team2.id ? 'winner' : ''}">
+          <span class="seed">${matchup.team2.seed}</span>
+          <span class="team-abbr" style="color: ${team2?.colors.primary || '#fff'}">${team2?.abbreviation || matchup.team2.id}</span>
+          <span class="team-wins">${matchup.team2.wins}</span>
+        </div>
+        ${isComplete ? `<div class="series-status">Final</div>` : `<div class="series-status">Game ${matchup.games + 1}</div>`}
+      </div>
+    `;
+  }
+  
+  private renderEmptyMatchups(count: number, isFinals: boolean = false): string {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      html += `
+        <div class="matchup-card ${isFinals ? 'finals-matchup' : ''} pending">
+          <div class="matchup-team pending">
+            <span class="seed">-</span>
+            <span class="team-abbr">TBD</span>
+            <span class="team-wins">-</span>
+          </div>
+          <div class="matchup-team pending">
+            <span class="seed">-</span>
+            <span class="team-abbr">TBD</span>
+            <span class="team-wins">-</span>
+          </div>
+          <div class="series-status">Waiting</div>
+        </div>
+      `;
+    }
+    return html;
+  }
+
+  // ==================== ALL-STAR ====================
+  private renderAllStar(): string {
+    const allStarDisplay = this.engine.getAllStarDisplay();
+    
+    if (!allStarDisplay) {
+      return `
+        <div class="allstar-section">
+          <div class="allstar-waiting">
+            <h2>⭐ NBA All-Star Game</h2>
+            <div class="waiting-content">
+              <div class="star-icon">⭐</div>
+              <p>The All-Star Game hasn't happened yet this season.</p>
+              <p class="sub-text">The All-Star break occurs at the midpoint of the regular season (around 45-50% complete).</p>
+              <div class="season-progress">
+                <div class="progress-bar-large">
+                  <div class="progress-fill" style="width: ${this.engine.getSeasonProgress().percent}%"></div>
+                </div>
+                <p>${this.engine.getSeasonProgress().percent}% of regular season complete</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    return `
+      <div class="allstar-section">
+        <div class="allstar-header">
+          <h2>⭐ NBA All-Star Game ${allStarDisplay.year}</h2>
+          ${allStarDisplay.gameComplete ? `
+            <div class="allstar-score">
+              <span class="team-score east">${allStarDisplay.east.teamName}: ${allStarDisplay.east.score}</span>
+              <span class="vs">vs</span>
+              <span class="team-score west">${allStarDisplay.west.teamName}: ${allStarDisplay.west.score}</span>
+            </div>
+          ` : ''}
+        </div>
+        
+        ${allStarDisplay.mvp ? `
+          <div class="allstar-mvp">
+            <div class="mvp-badge">⭐ All-Star MVP</div>
+            <div class="mvp-name">${allStarDisplay.mvp.name}</div>
+            <div class="mvp-team">${allStarDisplay.mvp.teamName}</div>
+          </div>
+        ` : ''}
+        
+        <div class="allstar-rosters">
+          ${this.renderAllStarTeam(allStarDisplay.east, 'East')}
+          ${this.renderAllStarTeam(allStarDisplay.west, 'West')}
+        </div>
+      </div>
+    `;
+  }
+  
+  private renderAllStarTeam(team: any, label: string): string {
+    return `
+      <div class="allstar-team ${label.toLowerCase()}">
+        <div class="allstar-team-header">
+          <h3>${label}ern Conference</h3>
+          <p class="coach">Coach: ${team.coach}</p>
+        </div>
+        
+        <div class="allstar-starters">
+          <h4>Starters</h4>
+          ${team.starters.map((p: any) => `
+            <div class="allstar-player starter">
+              <span class="player-ovr ${this.getRatingClass(p.overall)}">${p.overall}</span>
+              <div class="player-info">
+                <span class="player-name">${p.name}</span>
+                <span class="player-team">${p.team} • ${p.position}</span>
+              </div>
+              <div class="player-stats">
+                <span>${p.ppg} PPG</span>
+                <span>${p.rpg} RPG</span>
+                <span>${p.apg} APG</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="allstar-reserves">
+          <h4>Reserves</h4>
+          ${team.reserves.map((p: any) => `
+            <div class="allstar-player reserve">
+              <span class="player-ovr ${this.getRatingClass(p.overall)}">${p.overall}</span>
+              <div class="player-info">
+                <span class="player-name">${p.name}</span>
+                <span class="player-team">${p.team} • ${p.position}</span>
+              </div>
+              <div class="player-stats">
+                <span>${p.ppg} PPG</span>
+                <span>${p.rpg} RPG</span>
+                <span>${p.apg} APG</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   // ==================== AWARDS ====================
   private renderAwards(): string {
     const state = this.engine.getState();
     const leaders = this.engine.getLeaders();
+    const awardWinners = this.engine.getAwardWinners();
+    const championships = this.engine.getChampionshipHistory();
     
     return `
       <div class="awards-section">
-        <h2>🏅 Season Awards & Leaders</h2>
+        <h2>🏅 Awards & League Leaders</h2>
         
-        <div class="stat-leaders">
-          <div class="leader-category">
-            <h3>Points Per Game</h3>
-            ${this.renderLeadersList(leaders.points)}
-          </div>
-          <div class="leader-category">
-            <h3>Rebounds Per Game</h3>
-            ${this.renderLeadersList(leaders.rebounds)}
-          </div>
-          <div class="leader-category">
-            <h3>Assists Per Game</h3>
-            ${this.renderLeadersList(leaders.assists)}
-          </div>
-          <div class="leader-category">
-            <h3>Steals Per Game</h3>
-            ${this.renderLeadersList(leaders.steals)}
-          </div>
-          <div class="leader-category">
-            <h3>Blocks Per Game</h3>
-            ${this.renderLeadersList(leaders.blocks)}
+        <!-- Major Awards -->
+        <div class="major-awards">
+          <h3>Season Awards ${state.currentSeason.year}</h3>
+          <div class="awards-grid">
+            ${this.renderAwardCard('MVP', awardWinners['MVP']?.[0]?.player, state)}
+            ${this.renderAwardCard('DPOY', awardWinners['DPOY']?.[0]?.player, state)}
+            ${this.renderAwardCard('ROY', awardWinners['ROY']?.[0]?.player, state)}
+            ${this.renderAwardCard('6MOY', awardWinners['SMOY']?.[0]?.player, state)}
+            ${this.renderAwardCard('Finals MVP', awardWinners['FMVP']?.[0]?.player, state)}
           </div>
         </div>
         
-        <div class="award-history">
-          <h3>Recent Award Winners</h3>
-          <p class="placeholder">Awards will be announced at end of season.</p>
+        <!-- All-NBA Teams -->
+        <div class="all-nba-section">
+          <h3>All-NBA Teams</h3>
+          <div class="all-nba-grid">
+            ${this.renderAllNBATeam('1st Team', awardWinners['All-NBA-1st'], state)}
+            ${this.renderAllNBATeam('2nd Team', awardWinners['All-NBA-2nd'], state)}
+            ${this.renderAllNBATeam('3rd Team', awardWinners['All-NBA-3rd'], state)}
+          </div>
+        </div>
+        
+        <!-- Stat Leaders -->
+        <div class="stat-leaders">
+          <h3>Statistical Leaders</h3>
+          <div class="leaders-grid">
+            <div class="leader-category">
+              <h4>Points Per Game</h4>
+              ${this.renderLeadersList(leaders.points)}
+            </div>
+            <div class="leader-category">
+              <h4>Rebounds Per Game</h4>
+              ${this.renderLeadersList(leaders.rebounds)}
+            </div>
+            <div class="leader-category">
+              <h4>Assists Per Game</h4>
+              ${this.renderLeadersList(leaders.assists)}
+            </div>
+            <div class="leader-category">
+              <h4>Steals Per Game</h4>
+              ${this.renderLeadersList(leaders.steals)}
+            </div>
+            <div class="leader-category">
+              <h4>Blocks Per Game</h4>
+              ${this.renderLeadersList(leaders.blocks)}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Championship History -->
+        ${championships.length > 0 ? `
+          <div class="championship-history">
+            <h3>🏆 Championship History</h3>
+            <div class="championship-list">
+              ${championships.slice(0, 10).map(c => `
+                <div class="championship-item">
+                  <span class="champ-year">${c.year}</span>
+                  <span class="champ-team" style="color: ${c.team.colors.primary}">${c.team.city} ${c.team.name}</span>
+                  ${c.fmvp ? `<span class="champ-fmvp">FMVP: ${c.fmvp.firstName} ${c.fmvp.lastName}</span>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+  
+  private renderAwardCard(title: string, player: Player | undefined, state: any): string {
+    if (!player) {
+      return `
+        <div class="award-card pending">
+          <div class="award-title">${title}</div>
+          <div class="award-pending">TBD</div>
+          <p class="award-note">Announced at season end</p>
+        </div>
+      `;
+    }
+    
+    const team = player.teamId ? state.teams[player.teamId] : null;
+    const stats = player.seasonStats[state.currentSeason.year];
+    const ppg = stats ? (stats.points / stats.gamesPlayed).toFixed(1) : '0.0';
+    const rpg = stats ? (stats.rebounds / stats.gamesPlayed).toFixed(1) : '0.0';
+    const apg = stats ? (stats.assists / stats.gamesPlayed).toFixed(1) : '0.0';
+    
+    return `
+      <div class="award-card won">
+        <div class="award-title">${title}</div>
+        <div class="award-winner">
+          <span class="winner-ovr ${this.getRatingClass(player.stats.overall)}">${player.stats.overall}</span>
+          <div class="winner-info">
+            <span class="winner-name">${player.firstName} ${player.lastName}</span>
+            <span class="winner-team">${team?.city || ''} ${team?.name || ''}</span>
+          </div>
+        </div>
+        <div class="winner-stats">${ppg} PPG | ${rpg} RPG | ${apg} APG</div>
+      </div>
+    `;
+  }
+  
+  private renderAllNBATeam(teamName: string, players: { player: Player }[] | undefined, state: any): string {
+    if (!players || players.length === 0) {
+      return `
+        <div class="all-nba-team pending">
+          <h4>${teamName}</h4>
+          <p class="pending-text">Selected at season end</p>
+        </div>
+      `;
+    }
+    
+    return `
+      <div class="all-nba-team">
+        <h4>${teamName}</h4>
+        <div class="team-players">
+          ${players.map(({ player }) => {
+            const team = player.teamId ? state.teams[player.teamId] : null;
+            return `
+              <div class="all-nba-player">
+                <span class="player-ovr ${this.getRatingClass(player.stats.overall)}">${player.stats.overall}</span>
+                <span class="player-name">${player.firstName} ${player.lastName}</span>
+                <span class="player-pos">${player.position}</span>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -1951,6 +2305,65 @@ export class GMMode {
           this.render();
         }
       });
+    });
+
+    // ==================== PLAYOFF EVENTS ====================
+    
+    // Simulate to playoffs
+    document.getElementById('sim-to-playoffs')?.addEventListener('click', () => {
+      this.showMessage('Simulating to playoffs...');
+      setTimeout(() => {
+        this.engine.simulateToPlayoffs();
+        this.render();
+        this.showMessage('Regular season complete!');
+      }, 100);
+    });
+
+    // Sim next playoff game
+    document.getElementById('sim-playoff-game')?.addEventListener('click', () => {
+      const games = this.engine.simulateDay();
+      if (games.length > 0) {
+        this.render();
+      }
+    });
+
+    // Sim playoff round
+    document.getElementById('sim-playoff-round')?.addEventListener('click', () => {
+      this.showMessage('Simulating round...');
+      setTimeout(() => {
+        for (let i = 0; i < 50; i++) {
+          this.engine.simulateDay();
+        }
+        this.render();
+      }, 100);
+    });
+
+    // Sim all playoffs
+    document.getElementById('sim-all-playoffs')?.addEventListener('click', () => {
+      this.showMessage('Simulating playoffs...');
+      setTimeout(() => {
+        const result = this.engine.simulatePlayoffs();
+        this.render();
+        if (result.champion) {
+          const team = this.engine.getState().teams[result.champion];
+          this.showMessage(`🏆 ${team.city} ${team.name} are NBA Champions!`);
+        }
+      }, 100);
+    });
+
+    // End season
+    document.getElementById('end-season-btn')?.addEventListener('click', () => {
+      this.engine.endSeason();
+      this.currentTab = 'awards';
+      this.render();
+      this.showMessage('Season complete! Check the awards.');
+    });
+
+    // Continue to draft
+    document.getElementById('continue-offseason')?.addEventListener('click', () => {
+      this.engine.startDraft();
+      this.currentTab = 'draft';
+      this.render();
     });
 
     // ==================== EXPANSION EVENTS ====================

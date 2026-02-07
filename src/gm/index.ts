@@ -13,6 +13,8 @@ export * from './data/players';
 export * from './systems/TradeSystem';
 export * from './systems/DraftSystem';
 export * from './systems/SeasonSystem';
+export * from './systems/PlayoffSystem';
+export * from './systems/AllStarSystem';
 export * from './systems/ContractSystem';
 export * from './systems/PlayerDevelopment';
 export * from './systems/CoachingSystem';

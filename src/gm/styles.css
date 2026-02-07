@@ -3168,3 +3168,819 @@
     font-size: 1.8rem;
   }
 }
+
+/* ==================== PLAYOFFS BRACKET ==================== */
+
+.playoffs-section {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.playoffs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.playoffs-header h2 {
+  font-size: 32px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.playoff-round-indicator {
+  background: var(--accent-gradient);
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.playoffs-waiting {
+  text-align: center;
+  padding: var(--space-2xl);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.playoffs-waiting h2 {
+  font-size: 36px;
+  margin-bottom: var(--space-lg);
+}
+
+.waiting-content {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.trophy-icon, .star-icon {
+  font-size: 80px;
+  margin-bottom: var(--space-lg);
+  animation: float 3s ease-in-out infinite;
+}
+
+.waiting-content p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.waiting-content .sub-text {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.season-progress {
+  margin: var(--space-xl) 0;
+}
+
+.progress-bar-large {
+  height: 12px;
+  background: var(--bg-dark);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+
+.progress-bar-large .progress-fill {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.champion-banner {
+  text-align: center;
+  padding: var(--space-2xl);
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(249, 115, 22, 0.2));
+  border: 2px solid var(--star);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-xl);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.champion-trophy {
+  font-size: 80px;
+  margin-bottom: var(--space-md);
+  animation: float 3s ease-in-out infinite;
+}
+
+.champion-banner h3 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: var(--space-sm);
+  background: linear-gradient(135deg, var(--star), #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.champion-banner p {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--star);
+}
+
+.playoff-bracket {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.bracket-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.bracket-column.finals-column {
+  justify-content: center;
+  align-items: center;
+}
+
+.conference-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+  border: var(--border-subtle);
+}
+
+.bracket-rounds {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: center;
+  justify-content: center;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.round-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-sm);
+}
+
+.matchup-card {
+  background: var(--bg-card);
+  border: var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  min-width: 140px;
+  transition: all var(--transition-fast);
+}
+
+.matchup-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.matchup-card.complete {
+  opacity: 0.8;
+}
+
+.matchup-card.pending {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.matchup-card.finals-matchup {
+  min-width: 180px;
+  border-color: var(--star);
+  background: linear-gradient(135deg, var(--bg-card), rgba(234, 179, 8, 0.1));
+}
+
+.matchup-team {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  margin: 2px 0;
+  transition: background var(--transition-fast);
+}
+
+.matchup-team:hover {
+  background: var(--bg-hover);
+}
+
+.matchup-team.winner {
+  background: rgba(34, 197, 94, 0.15);
+  font-weight: 700;
+}
+
+.matchup-team.user-team {
+  border-left: 3px solid var(--accent-primary);
+}
+
+.matchup-team.pending {
+  opacity: 0.5;
+}
+
+.matchup-team .seed {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  width: 20px;
+}
+
+.matchup-team .team-abbr {
+  flex: 1;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.matchup-team .team-wins {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+}
+
+.series-status {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  padding-top: var(--space-xs);
+  border-top: var(--border-subtle);
+  margin-top: var(--space-xs);
+}
+
+.finals-matchup-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--glass-bg);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--star);
+}
+
+.playoffs-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+/* ==================== ALL-STAR GAME ==================== */
+
+.allstar-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.allstar-header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.allstar-header h2 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.allstar-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xl);
+  font-size: 24px;
+  font-weight: 800;
+  padding: var(--space-lg);
+  background: var(--glass-bg);
+  border-radius: var(--radius-xl);
+  border: var(--border-subtle);
+}
+
+.allstar-score .vs {
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.allstar-score .team-score.east {
+  color: #1976d2;
+}
+
+.allstar-score .team-score.west {
+  color: #c62828;
+}
+
+.allstar-waiting {
+  text-align: center;
+  padding: var(--space-2xl);
+}
+
+.allstar-waiting h2 {
+  font-size: 36px;
+  margin-bottom: var(--space-lg);
+}
+
+.allstar-mvp {
+  text-align: center;
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(168, 85, 247, 0.2));
+  border: 2px solid var(--star);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-xl);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.mvp-badge {
+  display: inline-block;
+  background: var(--star);
+  color: #000;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+.mvp-name {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.mvp-team {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.allstar-rosters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+
+.allstar-team {
+  background: var(--glass-bg);
+  border: var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.allstar-team.east {
+  border-top: 4px solid #1976d2;
+}
+
+.allstar-team.west {
+  border-top: 4px solid #c62828;
+}
+
+.allstar-team-header {
+  padding: var(--space-lg);
+  background: var(--bg-card);
+  border-bottom: var(--border-subtle);
+}
+
+.allstar-team-header h3 {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 18px;
+}
+
+.allstar-team-header .coach {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.allstar-starters,
+.allstar-reserves {
+  padding: var(--space-lg);
+}
+
+.allstar-starters h4,
+.allstar-reserves h4 {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.allstar-player {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  transition: background var(--transition-fast);
+}
+
+.allstar-player:hover {
+  background: var(--bg-hover);
+}
+
+.allstar-player.starter {
+  background: var(--bg-card);
+  border: var(--border-subtle);
+}
+
+.allstar-player .player-ovr {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+}
+
+.allstar-player .player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.allstar-player .player-name {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.allstar-player .player-team {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.allstar-player .player-stats {
+  display: flex;
+  gap: var(--space-md);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ==================== ENHANCED AWARDS ==================== */
+
+.awards-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.awards-section h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.major-awards {
+  margin-bottom: var(--space-2xl);
+}
+
+.major-awards h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-md);
+  border-left: 4px solid var(--accent-primary);
+}
+
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-lg);
+}
+
+.award-card {
+  background: var(--glass-bg);
+  border: var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.award-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.award-card.won {
+  border-color: var(--star);
+  background: linear-gradient(135deg, var(--bg-card), rgba(234, 179, 8, 0.1));
+}
+
+.award-card.pending {
+  opacity: 0.7;
+}
+
+.award-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--star);
+  margin-bottom: var(--space-md);
+}
+
+.award-pending {
+  font-size: 36px;
+  color: var(--text-tertiary);
+  font-weight: 800;
+}
+
+.award-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: var(--space-sm);
+}
+
+.award-winner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  justify-content: center;
+  margin-bottom: var(--space-sm);
+}
+
+.award-winner .winner-ovr {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: white;
+}
+
+.award-winner .winner-info {
+  text-align: left;
+}
+
+.award-winner .winner-name {
+  font-weight: 700;
+  font-size: 16px;
+  display: block;
+}
+
+.award-winner .winner-team {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.winner-stats {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.all-nba-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.all-nba-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-md);
+  border-left: 4px solid var(--elite);
+}
+
+.all-nba-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.all-nba-team {
+  background: var(--glass-bg);
+  border: var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.all-nba-team.pending {
+  opacity: 0.6;
+  text-align: center;
+}
+
+.all-nba-team h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 var(--space-md) 0;
+  color: var(--elite);
+}
+
+.pending-text {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.team-players {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.all-nba-player {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+}
+
+.all-nba-player .player-ovr {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.all-nba-player .player-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.all-nba-player .player-pos {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.stat-leaders h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-md);
+  border-left: 4px solid var(--info);
+}
+
+.leaders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-lg);
+}
+
+.leader-category {
+  background: var(--glass-bg);
+  border: var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.leader-category h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 var(--space-md) 0;
+  color: var(--text-secondary);
+}
+
+.leaders-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaders-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--border-subtle);
+  font-size: 13px;
+}
+
+.leaders-list li:last-child {
+  border-bottom: none;
+}
+
+.leaders-list .rank {
+  font-weight: 700;
+  color: var(--text-tertiary);
+  width: 24px;
+}
+
+.leaders-list .name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.leaders-list .team {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  width: 36px;
+}
+
+.leaders-list .value {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent-primary);
+}
+
+.championship-history {
+  margin-top: var(--space-2xl);
+}
+
+.championship-history h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-md);
+  border-left: 4px solid var(--star);
+}
+
+.championship-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+
+.championship-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--glass-bg);
+  border: var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.championship-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.championship-item .champ-year {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--star);
+}
+
+.championship-item .champ-team {
+  flex: 1;
+  font-weight: 600;
+}
+
+.championship-item .champ-fmvp {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Responsive for playoffs */
+@media (max-width: 1200px) {
+  .playoff-bracket {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+  
+  .bracket-rounds {
+    flex-wrap: wrap;
+  }
+  
+  .allstar-rosters {
+    grid-template-columns: 1fr;
+  }
+  
+  .all-nba-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .allstar-score {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .allstar-player .player-stats {
+    display: none;
+  }
+}

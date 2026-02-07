@@ -5,16 +5,19 @@
 import { LeagueState, Season, Team, Player, DraftPick, LeagueSettings, Game, TeamStrategyData } from './types';
 import { NBA_TEAMS, initializeAllTeams, generateCoach } from './data/teams';
 import { generateRoster, generateFreeAgents, generatePlayer, emptySeasonStats } from './data/players';
-import { generateRegularSeasonSchedule, simulateGame, updateStandings, generatePlayoffBracket, selectAwards, getSeasonLeaders } from './systems/SeasonSystem';
+import { generateRegularSeasonSchedule, simulateGame, updateStandings, selectAwards, getSeasonLeaders } from './systems/SeasonSystem';
+import { generatePlayoffBracket, simulateNextPlayoffGame, simulateEntirePlayoffs, getPlayoffStatus, arePlayoffsComplete, selectFinalsMVP } from './systems/PlayoffSystem';
 import { initializeDraft, runLottery, makePickSelection, simulateAIPick, DraftState } from './systems/DraftSystem';
 import { processOffseasonDevelopment, processTrainingCamp, rollForInjury, processInjuryRecovery } from './systems/PlayerDevelopment';
 import { CAP_VALUES, processEndOfSeason } from './systems/ContractSystem';
 import { generateCoachingStaff, ExtendedCoach, generateCoach as generateExtendedCoach } from './systems/CoachingSystem';
 import { createDefaultPhilosophy, createDefaultPlaybook, createDefaultRotation, createDefaultIdentity, TeamPhilosophy, RotationSettings } from './systems/TeamStrategy';
+import { selectAllStars, simulateAllStarGame, AllStarGame, getAllStarDisplay } from './systems/AllStarSystem';
 
 export class LeagueEngine {
   private state: LeagueState;
   private draftState: DraftState | null = null;
+  private allStarData: AllStarGame | null = null;
   private onStateChange?: (state: LeagueState) => void;
   
   constructor(userTeamId: string = 'LAL') {
@@ -140,6 +143,7 @@ export class LeagueEngine {
   getTeam(teamId: string): Team | undefined { return this.state.teams[teamId]; }
   getPlayer(playerId: string): Player | undefined { return this.state.players[playerId]; }
   getDraftState(): DraftState | null { return this.draftState; }
+  getAllStarData(): AllStarGame | null { return this.allStarData; }
   
   // State change listener
   setOnStateChange(callback: (state: LeagueState) => void) {
@@ -182,16 +186,58 @@ export class LeagueEngine {
       .reverse();
   }
   
+  // Get playoff bracket status
+  getPlayoffStatus() {
+    return getPlayoffStatus(this.state);
+  }
+  
+  // Get All-Star display data
+  getAllStarDisplay() {
+    if (!this.allStarData) return null;
+    return getAllStarDisplay(this.allStarData, this.state);
+  }
+  
+  // Get games played progress
+  getSeasonProgress(): { played: number; total: number; percent: number } {
+    const schedule = this.state.currentSeason.schedule.filter(g => !g.isPlayoff);
+    const played = schedule.filter(g => g.played).length;
+    const total = schedule.length;
+    return {
+      played,
+      total,
+      percent: total > 0 ? Math.round((played / total) * 100) : 0
+    };
+  }
+  
+  // Check if it's All-Star break
+  private isAllStarBreak(): boolean {
+    const progress = this.getSeasonProgress();
+    return progress.percent >= 45 && progress.percent <= 55 && !this.allStarData?.game?.played;
+  }
+  
   // Simulate one day (play scheduled games)
   simulateDay(): Game[] {
     const season = this.state.currentSeason;
-    if (season.phase !== 'regular' && season.phase !== 'playoffs') {
+    
+    // Handle different phases
+    if (season.phase === 'playoffs') {
+      return this.simulatePlayoffDay();
+    }
+    
+    if (season.phase !== 'regular') {
+      return [];
+    }
+    
+    // Check for All-Star break
+    if (this.isAllStarBreak() && !this.allStarData) {
+      this.triggerAllStarGame();
       return [];
     }
     
     // Find games for current day
     const todayGames = season.schedule.filter(g => 
       !g.played && 
+      !g.isPlayoff &&
       g.date.year === season.year &&
       g.date.month === this.getCurrentMonth() &&
       g.date.day === season.day
@@ -199,7 +245,7 @@ export class LeagueEngine {
     
     const playedGames: Game[] = [];
     
-    for (const game of todayGames.slice(0, 10)) { // Max 10 games per day
+    for (const game of todayGames.slice(0, 15)) { // Max 15 games per day
       const simulated = simulateGame(game, this.state);
       
       // Update the game in schedule
@@ -242,13 +288,55 @@ export class LeagueEngine {
     }
     
     // Check for end of regular season
-    const gamesRemaining = season.schedule.filter(g => !g.played).length;
+    const regularSeasonGames = season.schedule.filter(g => !g.isPlayoff);
+    const gamesRemaining = regularSeasonGames.filter(g => !g.played).length;
     if (gamesRemaining === 0 && season.phase === 'regular') {
       this.startPlayoffs();
     }
     
     this.notifyChange();
     return playedGames;
+  }
+  
+  // Simulate a playoff day
+  private simulatePlayoffDay(): Game[] {
+    const games: Game[] = [];
+    
+    // Simulate up to 4 playoff games per day
+    for (let i = 0; i < 4; i++) {
+      const game = simulateNextPlayoffGame(this.state);
+      if (game) {
+        games.push(game);
+      } else {
+        break;
+      }
+    }
+    
+    // Check if playoffs complete
+    if (arePlayoffsComplete(this.state)) {
+      // Award Finals MVP
+      selectFinalsMVP(this.state);
+      
+      // Record championship
+      const champion = this.state.currentSeason.playoffs?.champion;
+      if (champion) {
+        const team = this.state.teams[champion];
+        if (team) {
+          team.championships.push(this.state.currentSeason.year);
+        }
+      }
+    }
+    
+    this.state.currentSeason.day++;
+    this.notifyChange();
+    return games;
+  }
+  
+  // Trigger All-Star game
+  private triggerAllStarGame(): void {
+    this.allStarData = selectAllStars(this.state);
+    this.allStarData = simulateAllStarGame(this.allStarData, this.state);
+    this.notifyChange();
   }
   
   // Simulate a full week
@@ -270,10 +358,29 @@ export class LeagueEngine {
     }
   }
   
+  // Simulate entire playoffs
+  simulatePlayoffs(): { champion: string; fmvp: Player | null } {
+    const result = simulateEntirePlayoffs(this.state);
+    
+    // Record championship
+    if (result.champion) {
+      const team = this.state.teams[result.champion];
+      if (team) {
+        team.championships.push(this.state.currentSeason.year);
+      }
+    }
+    
+    this.notifyChange();
+    return result;
+  }
+  
   // Start playoffs
-  private startPlayoffs(): void {
+  startPlayoffs(): void {
     this.state.currentSeason.phase = 'playoffs';
-    this.state.currentSeason.playoffs = generatePlayoffBracket(this.state.teams);
+    this.state.currentSeason.playoffs = generatePlayoffBracket(
+      this.state.teams, 
+      this.state.currentSeason.year
+    );
     this.notifyChange();
   }
   
@@ -357,7 +464,7 @@ export class LeagueEngine {
     this.notifyChange();
   }
   
-  // Start new season
+  // Complete offseason and start new season
   startNewSeason(): void {
     const newYear = this.state.currentSeason.year + 1;
     
@@ -366,6 +473,12 @@ export class LeagueEngine {
     
     // Process training camp
     processTrainingCamp(this.state);
+    
+    // Age all players
+    for (const player of Object.values(this.state.players)) {
+      player.age++;
+      player.yearsExperience++;
+    }
     
     // Reset team records
     for (const team of Object.values(this.state.teams)) {
@@ -392,9 +505,37 @@ export class LeagueEngine {
       player.seasonStats[newYear] = emptySeasonStats();
     }
     
+    // Reset draft and all-star data
     this.draftState = null;
+    this.allStarData = null;
     
     this.notifyChange();
+  }
+  
+  // Advance to next phase
+  advancePhase(): void {
+    const phase = this.state.currentSeason.phase;
+    
+    switch (phase) {
+      case 'regular':
+        this.simulateToPlayoffs();
+        break;
+      case 'playoffs':
+        if (!arePlayoffsComplete(this.state)) {
+          this.simulatePlayoffs();
+        }
+        this.endSeason();
+        break;
+      case 'offseason':
+        this.startDraft();
+        break;
+      case 'draft':
+        this.simulateDraft();
+        break;
+      case 'free-agency':
+        this.startNewSeason();
+        break;
+    }
   }
   
   private getCurrentMonth(): number {
@@ -414,11 +555,57 @@ export class LeagueEngine {
     return getSeasonLeaders(this.state);
   }
   
+  // Get award winners for current/past seasons
+  getAwardWinners(year?: number): Record<string, { player: Player; votes?: number }[]> {
+    const targetYear = year || this.state.currentSeason.year;
+    const winners: Record<string, { player: Player; votes?: number }[]> = {
+      'MVP': [],
+      'DPOY': [],
+      'ROY': [],
+      'SMOY': [],
+      'MIP': [],
+      'FMVP': [],
+      'All-NBA-1st': [],
+      'All-NBA-2nd': [],
+      'All-NBA-3rd': [],
+      'All-Defensive-1st': [],
+      'All-Defensive-2nd': [],
+      'All-Star': []
+    };
+    
+    for (const player of Object.values(this.state.players)) {
+      for (const award of player.awards) {
+        if (award.year === targetYear && winners[award.type]) {
+          winners[award.type].push({ player });
+        }
+      }
+    }
+    
+    return winners;
+  }
+  
+  // Get championship history
+  getChampionshipHistory(): { year: number; team: Team; fmvp?: Player }[] {
+    const history: { year: number; team: Team; fmvp?: Player }[] = [];
+    
+    for (const team of Object.values(this.state.teams)) {
+      for (const year of team.championships) {
+        const fmvp = Object.values(this.state.players).find(p =>
+          p.awards.some(a => a.year === year && a.type === 'FMVP')
+        );
+        history.push({ year, team, fmvp });
+      }
+    }
+    
+    return history.sort((a, b) => b.year - a.year);
+  }
+  
   // Save/Load
   save(): string {
     return JSON.stringify({
       state: this.state,
-      draftState: this.draftState
+      draftState: this.draftState,
+      allStarData: this.allStarData
     });
   }
   
@@ -426,6 +613,7 @@ export class LeagueEngine {
     const data = JSON.parse(saveData);
     this.state = data.state;
     this.draftState = data.draftState;
+    this.allStarData = data.allStarData || null;
     this.notifyChange();
   }
   
