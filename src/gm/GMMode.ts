@@ -1525,6 +1525,333 @@ export class GMMode {
     return descriptions[scheme] || '';
   }
 
+  // ==================== EXPANSION ====================
+  private renderExpansion(): string {
+    const state = this.engine.getState();
+    
+    if (this.expansionState.phase === 'draft' && this.expansionState.draftState) {
+      return this.renderExpansionDraft();
+    }
+    
+    if (this.expansionState.phase === 'complete' && this.expansionState.newTeam) {
+      return this.renderExpansionComplete();
+    }
+    
+    // Default: Create expansion team form
+    return `
+      <div class="expansion-section">
+        <div class="expansion-header">
+          <h2>🏗️ Create Expansion Team</h2>
+          <p>Add a new franchise to the league. Build from scratch and compete!</p>
+        </div>
+        
+        <div class="expansion-form">
+          <!-- City Selection -->
+          <div class="expansion-card">
+            <h3>📍 Choose Your City</h3>
+            <div class="city-grid">
+              ${EXPANSION_CITIES.map(city => `
+                <div class="city-option ${this.expansionState.config.city?.name === city.name ? 'selected' : ''}" 
+                     data-city="${city.name}">
+                  <div class="city-name">${city.name}, ${city.state}</div>
+                  <div class="city-meta">
+                    <span class="market-badge ${city.market}">${city.market.toUpperCase()}</span>
+                    ${city.hasNBAHistory ? '<span class="history-badge">📜 NBA History</span>' : ''}
+                  </div>
+                  <div class="city-details">
+                    <span>Pop: ${(city.population / 1000000).toFixed(1)}M</span>
+                    <span>Region: ${city.region}</span>
+                  </div>
+                  ${city.previousTeam ? `<div class="previous-team">Former: ${city.previousTeam}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          ${this.expansionState.config.city ? `
+            <!-- Team Name -->
+            <div class="expansion-card">
+              <h3>🏀 Team Identity</h3>
+              <div class="form-group">
+                <label>Team Name</label>
+                <input type="text" id="team-name" class="form-input" 
+                       placeholder="e.g., SuperSonics, Knights, Aztecs"
+                       value="${this.expansionState.config.teamName || ''}">
+                <div class="name-suggestions">
+                  <span class="suggestion-label">Suggestions:</span>
+                  ${(TEAM_NAME_SUGGESTIONS[this.expansionState.config.city.name] || []).map(name => `
+                    <button class="name-suggestion" data-name="${name}">${name}</button>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Abbreviation (3 letters)</label>
+                  <input type="text" id="team-abbr" class="form-input abbr-input" 
+                         maxlength="3" placeholder="SEA"
+                         value="${this.expansionState.config.abbreviation || ''}">
+                </div>
+                <div class="form-group">
+                  <label>Mascot (optional)</label>
+                  <input type="text" id="team-mascot" class="form-input" 
+                         placeholder="e.g., Squatch, Ace"
+                         value="${this.expansionState.config.mascot || ''}">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Colors -->
+            <div class="expansion-card">
+              <h3>🎨 Team Colors</h3>
+              <div class="color-presets">
+                ${COLOR_PRESETS.map(preset => `
+                  <div class="color-preset" data-preset='${JSON.stringify(preset)}'>
+                    <div class="color-swatch" style="background: linear-gradient(135deg, ${preset.primary} 50%, ${preset.secondary} 50%)"></div>
+                    <span>${preset.name}</span>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="color-custom">
+                <div class="form-group">
+                  <label>Primary</label>
+                  <input type="color" id="color-primary" value="${this.expansionState.config.colors?.primary || '#00653A'}">
+                </div>
+                <div class="form-group">
+                  <label>Secondary</label>
+                  <input type="color" id="color-secondary" value="${this.expansionState.config.colors?.secondary || '#FFC425'}">
+                </div>
+                <div class="form-group">
+                  <label>Accent</label>
+                  <input type="color" id="color-accent" value="${this.expansionState.config.colors?.accent || '#FFFFFF'}">
+                </div>
+              </div>
+              ${this.expansionState.config.colors ? `
+                <div class="color-preview">
+                  <div class="preview-jersey" style="background: ${this.expansionState.config.colors.primary}; border-color: ${this.expansionState.config.colors.secondary}">
+                    <span style="color: ${this.expansionState.config.colors.secondary}">${this.expansionState.config.abbreviation || 'XXX'}</span>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+            
+            <!-- Arena -->
+            <div class="expansion-card">
+              <h3>🏟️ Home Arena</h3>
+              <div class="arena-options">
+                ${(this.expansionState.config.city.arenaOptions || []).map(arena => `
+                  <button class="arena-option ${this.expansionState.config.arena === arena ? 'selected' : ''}" 
+                          data-arena="${arena}">${arena}</button>
+                `).join('')}
+              </div>
+              <div class="form-group">
+                <label>Or enter custom name:</label>
+                <input type="text" id="custom-arena" class="form-input" 
+                       placeholder="Custom Arena Name"
+                       value="${this.expansionState.config.arena || ''}">
+              </div>
+            </div>
+            
+            <!-- Finances -->
+            <div class="expansion-card">
+              <h3>💰 Expansion Finances</h3>
+              <div class="finance-preview">
+                <div class="finance-item">
+                  <span class="finance-label">Expansion Fee</span>
+                  <span class="finance-value">$${(calculateExpansionFee(this.expansionState.config.city) / 1000000000).toFixed(2)}B</span>
+                </div>
+                <div class="finance-item">
+                  <span class="finance-label">Market Size</span>
+                  <span class="finance-value">${this.expansionState.config.city.market.toUpperCase()}</span>
+                </div>
+                <div class="finance-item">
+                  <span class="finance-label">Initial Budget</span>
+                  <span class="finance-value">$200M</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Ticket Price Strategy</label>
+                <input type="range" id="ticket-price" class="slider" 
+                       min="80" max="150" step="5" 
+                       value="${(this.expansionState.config.ticketPriceMultiplier || 1) * 100}">
+                <div class="range-labels">
+                  <span>Budget (80%)</span>
+                  <span>Standard</span>
+                  <span>Premium (150%)</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Create Button -->
+            <div class="expansion-actions">
+              <button class="btn btn-lg btn-primary" id="create-expansion-team">
+                🚀 Create Team & Start Expansion Draft
+              </button>
+              <button class="btn btn-secondary" id="reset-expansion">
+                Reset
+              </button>
+            </div>
+          ` : `
+            <div class="expansion-placeholder">
+              <p>👆 Select a city above to begin creating your expansion team</p>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+  
+  private renderExpansionDraft(): string {
+    const draftState = this.expansionState.draftState!;
+    const newTeam = this.expansionState.newTeam!;
+    const state = this.engine.getState();
+    
+    const unprotectedPlayers = draftState.availablePlayers
+      .filter(p => p.protectionStatus === 'unprotected')
+      .filter(p => !draftState.selectedPlayers.includes(p.player.id));
+    
+    // Group by team
+    const playersByTeam = new Map<string, typeof unprotectedPlayers>();
+    for (const entry of unprotectedPlayers) {
+      if (!playersByTeam.has(entry.originalTeamId)) {
+        playersByTeam.set(entry.originalTeamId, []);
+      }
+      playersByTeam.get(entry.originalTeamId)!.push(entry);
+    }
+    
+    return `
+      <div class="expansion-draft">
+        <div class="draft-header">
+          <h2>🎯 Expansion Draft</h2>
+          <div class="draft-info">
+            <span class="new-team-badge" style="background: ${newTeam.colors.primary}">
+              ${newTeam.city} ${newTeam.name}
+            </span>
+            <span class="pick-counter">Pick ${draftState.currentPick} of ${draftState.maxPicks}</span>
+          </div>
+        </div>
+        
+        <div class="draft-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${(draftState.currentPick / draftState.maxPicks) * 100}%"></div>
+          </div>
+          <p>Select one player from each team (max one per team)</p>
+        </div>
+        
+        <!-- Selected Players -->
+        <div class="selected-players">
+          <h3>✅ Your Selections (${draftState.selectedPlayers.length})</h3>
+          <div class="selected-grid">
+            ${draftState.selectedPlayers.map(playerId => {
+              const entry = draftState.availablePlayers.find(p => p.player.id === playerId);
+              if (!entry) return '';
+              const player = entry.player;
+              return `
+                <div class="selected-player-card">
+                  <div class="player-rating">${player.stats.overall}</div>
+                  <div class="player-info">
+                    <div class="player-name">${player.firstName} ${player.lastName}</div>
+                    <div class="player-meta">${player.position} | Age ${player.age} | From ${entry.originalTeamName}</div>
+                  </div>
+                </div>
+              `;
+            }).join('') || '<p class="no-selections">No players selected yet</p>'}
+          </div>
+        </div>
+        
+        <!-- Available Players by Team -->
+        <div class="available-teams">
+          <h3>📋 Available Players by Team</h3>
+          ${Array.from(playersByTeam.entries()).map(([teamId, players]) => {
+            const team = state.teams[teamId];
+            const alreadySelected = draftState.selectedPlayers.some(id => {
+              const e = draftState.availablePlayers.find(p => p.player.id === id);
+              return e?.originalTeamId === teamId;
+            });
+            
+            return `
+              <div class="team-pool ${alreadySelected ? 'selected' : ''}">
+                <div class="team-header" style="border-color: ${team.colors.primary}">
+                  <span class="team-logo-sm" style="background: ${team.colors.primary}">${team.abbreviation}</span>
+                  <span class="team-name">${team.city} ${team.name}</span>
+                  ${alreadySelected ? '<span class="selected-badge">✓ Selected</span>' : ''}
+                </div>
+                ${!alreadySelected ? `
+                  <div class="player-list">
+                    ${players.slice(0, 5).map(entry => `
+                      <div class="expansion-player" data-player-id="${entry.player.id}">
+                        <div class="player-rating ${this.getRatingClass(entry.player.stats.overall)}">${entry.player.stats.overall}</div>
+                        <div class="player-details">
+                          <div class="player-name">${entry.player.firstName} ${entry.player.lastName}</div>
+                          <div class="player-meta">${entry.player.position} | ${entry.player.age}yo | $${(entry.player.contract.salary / 1000000).toFixed(1)}M</div>
+                        </div>
+                        <div class="player-value">Value: ${entry.value}</div>
+                        <button class="btn btn-sm btn-primary" data-action="select-expansion-player" data-id="${entry.player.id}">
+                          Select
+                        </button>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+        
+        <div class="draft-actions">
+          <button class="btn btn-secondary" id="auto-draft-expansion">🤖 Auto-Complete Draft</button>
+          ${draftState.selectedPlayers.length >= 10 ? `
+            <button class="btn btn-primary" id="finish-expansion-draft">✅ Finish Draft</button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  
+  private renderExpansionComplete(): string {
+    const newTeam = this.expansionState.newTeam!;
+    const state = this.engine.getState();
+    const roster = newTeam.roster.map(id => state.players[id]).filter(Boolean);
+    
+    return `
+      <div class="expansion-complete">
+        <div class="celebration">
+          <h1>🎉 Welcome to the League!</h1>
+          <div class="new-team-display" style="border-color: ${newTeam.colors.primary}">
+            <div class="team-logo-large" style="background: ${newTeam.colors.primary}; color: ${newTeam.colors.secondary}">
+              ${newTeam.abbreviation}
+            </div>
+            <h2>${newTeam.city} ${newTeam.name}</h2>
+            <p>${newTeam.arena} | ${newTeam.conference} Conference | ${newTeam.division} Division</p>
+          </div>
+        </div>
+        
+        <div class="expansion-roster">
+          <h3>📋 Your Inaugural Roster</h3>
+          <div class="roster-grid">
+            ${roster.sort((a, b) => b.stats.overall - a.stats.overall).map(player => `
+              <div class="roster-card">
+                <div class="player-rating ${this.getRatingClass(player.stats.overall)}">${player.stats.overall}</div>
+                <div class="player-info">
+                  <div class="player-name">${player.firstName} ${player.lastName}</div>
+                  <div class="player-meta">${player.position} | ${player.age}yo</div>
+                  <div class="player-contract">$${(player.contract.salary / 1000000).toFixed(1)}M / ${player.contract.years}yr</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="expansion-actions">
+          <button class="btn btn-lg btn-primary" id="start-as-expansion">
+            🏀 Start Playing as ${newTeam.name}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   // ==================== EVENT BINDINGS ====================
   private bindEvents(): void {
     // Tab navigation
@@ -1625,6 +1952,157 @@ export class GMMode {
         }
       });
     });
+
+    // ==================== EXPANSION EVENTS ====================
+    
+    // City selection
+    this.panel.querySelectorAll('.city-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cityName = (e.currentTarget as HTMLElement).dataset.city;
+        const city = EXPANSION_CITIES.find(c => c.name === cityName);
+        if (city) {
+          this.expansionState.config.city = city;
+          this.expansionState.config.abbreviation = generateExpansionTeamId(
+            this.expansionState.config.teamName || '',
+            city.name
+          );
+          this.render();
+        }
+      });
+    });
+
+    // Team name input
+    document.getElementById('team-name')?.addEventListener('input', (e) => {
+      const name = (e.target as HTMLInputElement).value;
+      this.expansionState.config.teamName = name;
+      if (this.expansionState.config.city && name.length >= 2) {
+        this.expansionState.config.abbreviation = generateExpansionTeamId(
+          name,
+          this.expansionState.config.city.name
+        );
+      }
+    });
+
+    // Name suggestions
+    this.panel.querySelectorAll('.name-suggestion').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const name = (e.currentTarget as HTMLElement).dataset.name!;
+        this.expansionState.config.teamName = name;
+        if (this.expansionState.config.city) {
+          this.expansionState.config.abbreviation = generateExpansionTeamId(
+            name,
+            this.expansionState.config.city.name
+          );
+        }
+        this.render();
+      });
+    });
+
+    // Abbreviation input
+    document.getElementById('team-abbr')?.addEventListener('input', (e) => {
+      this.expansionState.config.abbreviation = (e.target as HTMLInputElement).value.toUpperCase();
+    });
+
+    // Color presets
+    this.panel.querySelectorAll('.color-preset').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const preset = JSON.parse((e.currentTarget as HTMLElement).dataset.preset!);
+        this.expansionState.config.colors = {
+          primary: preset.primary,
+          secondary: preset.secondary,
+          accent: preset.accent
+        };
+        this.render();
+      });
+    });
+
+    // Custom colors
+    document.getElementById('color-primary')?.addEventListener('input', (e) => {
+      if (!this.expansionState.config.colors) {
+        this.expansionState.config.colors = { primary: '#000', secondary: '#FFF', accent: '#888' };
+      }
+      this.expansionState.config.colors.primary = (e.target as HTMLInputElement).value;
+    });
+
+    document.getElementById('color-secondary')?.addEventListener('input', (e) => {
+      if (!this.expansionState.config.colors) {
+        this.expansionState.config.colors = { primary: '#000', secondary: '#FFF', accent: '#888' };
+      }
+      this.expansionState.config.colors.secondary = (e.target as HTMLInputElement).value;
+    });
+
+    document.getElementById('color-accent')?.addEventListener('input', (e) => {
+      if (!this.expansionState.config.colors) {
+        this.expansionState.config.colors = { primary: '#000', secondary: '#FFF', accent: '#888' };
+      }
+      this.expansionState.config.colors.accent = (e.target as HTMLInputElement).value;
+    });
+
+    // Arena selection
+    this.panel.querySelectorAll('.arena-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        this.expansionState.config.arena = (e.currentTarget as HTMLElement).dataset.arena!;
+        this.render();
+      });
+    });
+
+    document.getElementById('custom-arena')?.addEventListener('input', (e) => {
+      this.expansionState.config.arena = (e.target as HTMLInputElement).value;
+    });
+
+    // Ticket price slider
+    document.getElementById('ticket-price')?.addEventListener('input', (e) => {
+      this.expansionState.config.ticketPriceMultiplier = parseInt((e.target as HTMLInputElement).value) / 100;
+    });
+
+    // Create expansion team
+    document.getElementById('create-expansion-team')?.addEventListener('click', () => {
+      this.createExpansionTeam();
+    });
+
+    // Reset expansion
+    document.getElementById('reset-expansion')?.addEventListener('click', () => {
+      this.expansionState = {
+        phase: 'create',
+        config: {},
+        draftState: null,
+        newTeam: null
+      };
+      this.render();
+    });
+
+    // Select expansion player
+    this.panel.querySelectorAll('[data-action="select-expansion-player"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const playerId = (e.currentTarget as HTMLElement).dataset.id!;
+        this.selectExpansionPlayer(playerId);
+      });
+    });
+
+    // Auto-draft expansion
+    document.getElementById('auto-draft-expansion')?.addEventListener('click', () => {
+      this.autoCompleteExpansionDraft();
+    });
+
+    // Finish expansion draft
+    document.getElementById('finish-expansion-draft')?.addEventListener('click', () => {
+      this.finishExpansionDraft();
+    });
+
+    // Start as expansion team
+    document.getElementById('start-as-expansion')?.addEventListener('click', () => {
+      if (this.expansionState.newTeam) {
+        this.engine = createNewLeague(this.expansionState.newTeam.id);
+        this.expansionState = {
+          phase: 'create',
+          config: {},
+          draftState: null,
+          newTeam: null
+        };
+        this.currentTab = 'dashboard';
+        this.render();
+      }
+    });
   }
 
   private proposeTrade(): void {
@@ -1700,5 +2178,110 @@ export class GMMode {
     setTimeout(() => {
       toast!.classList.remove('show');
     }, 3000);
+  }
+
+  // ==================== EXPANSION METHODS ====================
+
+  private createExpansionTeam(): void {
+    const config = this.expansionState.config;
+    
+    // Validation
+    const errors = validateExpansionConfig(config);
+    if (errors.length > 0) {
+      this.showMessage(errors[0], true);
+      return;
+    }
+
+    const state = this.engine.getState();
+    const existingTeams = Object.values(state.teams);
+    
+    // Determine conference/division
+    const { conference, division } = determineExpansionDivision(config.city!, existingTeams);
+    
+    // Create the team
+    const newTeam = createExpansionTeam(
+      config as ExpansionTeamConfig,
+      conference,
+      division,
+      state.currentSeason.year
+    );
+    
+    // Add to league
+    state.teams[newTeam.id] = newTeam;
+    
+    // Initialize expansion draft
+    const draftState = initializeExpansionDraft(existingTeams, state.players, 8);
+    
+    this.expansionState = {
+      phase: 'draft',
+      config,
+      draftState,
+      newTeam
+    };
+    
+    this.showMessage(`${newTeam.city} ${newTeam.name} created! Time for the expansion draft.`);
+    this.render();
+  }
+
+  private selectExpansionPlayer(playerId: string): void {
+    if (!this.expansionState.draftState || !this.expansionState.newTeam) return;
+    
+    const state = this.engine.getState();
+    
+    this.expansionState.draftState = selectExpansionPlayer(
+      this.expansionState.draftState,
+      playerId,
+      this.expansionState.newTeam,
+      state.players,
+      state.teams
+    );
+    
+    const player = state.players[playerId];
+    if (player) {
+      this.showMessage(`Selected ${player.firstName} ${player.lastName}!`);
+    }
+    
+    if (this.expansionState.draftState.phase === 'complete') {
+      this.finishExpansionDraft();
+    } else {
+      this.render();
+    }
+  }
+
+  private autoCompleteExpansionDraft(): void {
+    if (!this.expansionState.draftState || !this.expansionState.newTeam) return;
+    
+    const state = this.engine.getState();
+    
+    while (this.expansionState.draftState.phase !== 'complete' && 
+           this.expansionState.draftState.currentPick <= this.expansionState.draftState.maxPicks) {
+      this.expansionState.draftState = autoSelectExpansionPlayer(
+        this.expansionState.draftState,
+        this.expansionState.newTeam,
+        state.players,
+        state.teams
+      );
+    }
+    
+    this.showMessage('Expansion draft auto-completed!');
+    this.finishExpansionDraft();
+  }
+
+  private finishExpansionDraft(): void {
+    if (!this.expansionState.newTeam) return;
+    
+    const state = this.engine.getState();
+    
+    // Fill remaining roster spots with free agents/generated players
+    fillExpansionRoster(
+      this.expansionState.newTeam,
+      state.players,
+      state.freeAgents,
+      state
+    );
+    
+    this.expansionState.phase = 'complete';
+    this.showMessage(`${this.expansionState.newTeam.city} ${this.expansionState.newTeam.name} roster complete!`);
+    this.render();
   }
 }
