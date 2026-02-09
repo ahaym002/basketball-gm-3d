@@ -2,9 +2,12 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { LeagueEngine, LeagueEngineOptions } from '../gm/LeagueEngine'
 import { LeagueState, Team, Player, Game, DraftProspect } from '../gm/types'
+import { GameSettings, DEFAULT_SETTINGS } from '../types/gameSettings'
+import { SaveManager } from '../utils/saveManager'
 
 interface GameInitOptions {
   useRealData?: boolean;
+  settings?: GameSettings;
 }
 
 interface GameStore {
@@ -13,6 +16,7 @@ interface GameStore {
   isRealDataMode: boolean
   engine: LeagueEngine | null
   state: LeagueState | null
+  gameSettings: GameSettings
   
   // UI state
   isSimulating: boolean
@@ -21,6 +25,8 @@ interface GameStore {
   
   // Actions
   initializeGame: (teamId: string, options?: GameInitOptions) => void
+  loadFromSave: (slotId: number) => boolean
+  saveGame: (slotId: number, saveName: string) => boolean
   resetGame: () => void
   
   // Simulation
@@ -86,12 +92,14 @@ export const useGameStore = create<GameStore>()(
       isRealDataMode: false,
       engine: null,
       state: null,
+      gameSettings: DEFAULT_SETTINGS,
       isSimulating: false,
       lastSimulatedGames: [],
       notifications: [],
 
       // Initialize game with selected team and options
       initializeGame: (teamId: string, options: GameInitOptions = {}) => {
+        const settings = options.settings ?? DEFAULT_SETTINGS
         const engine = new LeagueEngine(teamId, {
           useRealData: options.useRealData ?? false
         })
@@ -105,7 +113,58 @@ export const useGameStore = create<GameStore>()(
           isRealDataMode: options.useRealData ?? false,
           engine,
           state: engine.getState(),
+          gameSettings: settings,
         })
+        
+        // Auto-save after initialization
+        const state = engine.getState()
+        SaveManager.autoSave(engine.save(), state, options.useRealData ?? false, settings)
+      },
+
+      // Load game from a save slot
+      loadFromSave: (slotId: number) => {
+        const saveData = SaveManager.loadGame(slotId)
+        if (!saveData) return false
+        
+        try {
+          const engine = new LeagueEngine(saveData.slot.teamId, {
+            useRealData: saveData.isRealDataMode
+          })
+          
+          engine.load(saveData.engineData)
+          
+          engine.setOnStateChange((newState) => {
+            set({ state: newState })
+          })
+          
+          set({
+            isInitialized: true,
+            isRealDataMode: saveData.isRealDataMode,
+            engine,
+            state: engine.getState(),
+            gameSettings: saveData.settings ?? DEFAULT_SETTINGS,
+          })
+          
+          return true
+        } catch (e) {
+          console.error('Failed to load save:', e)
+          return false
+        }
+      },
+
+      // Save game to a specific slot
+      saveGame: (slotId: number, saveName: string) => {
+        const { engine, state, isRealDataMode, gameSettings } = get()
+        if (!engine || !state) return false
+        
+        return SaveManager.saveGame(
+          slotId,
+          saveName,
+          engine.save(),
+          state,
+          isRealDataMode,
+          gameSettings
+        )
       },
 
       // Reset and start fresh
@@ -114,6 +173,7 @@ export const useGameStore = create<GameStore>()(
           isInitialized: false,
           engine: null,
           state: null,
+          gameSettings: DEFAULT_SETTINGS,
           lastSimulatedGames: [],
           notifications: [],
         })
@@ -121,21 +181,22 @@ export const useGameStore = create<GameStore>()(
 
       // Simulate one day
       simulateDay: () => {
-        const { engine } = get()
+        const { engine, isRealDataMode, gameSettings } = get()
         if (!engine) return
         
         set({ isSimulating: true })
         
         try {
           const games = engine.simulateDay()
+          const state = engine.getState()
           set({ 
             lastSimulatedGames: games,
-            state: engine.getState(),
+            state,
             isSimulating: false 
           })
           
           // Add notifications for user team games
-          const userTeamId = engine.getState().userTeamId
+          const userTeamId = state.userTeamId
           const userGames = games.filter(g => 
             g.homeTeamId === userTeamId || g.awayTeamId === userTeamId
           )
@@ -154,6 +215,9 @@ export const useGameStore = create<GameStore>()(
               }`
             })
           })
+          
+          // Auto-save after simulation
+          SaveManager.autoSave(engine.save(), state, isRealDataMode, gameSettings)
         } catch (e) {
           set({ isSimulating: false })
           console.error('Simulation error:', e)
@@ -162,18 +226,22 @@ export const useGameStore = create<GameStore>()(
 
       // Simulate full week
       simulateWeek: () => {
-        const { engine } = get()
+        const { engine, isRealDataMode, gameSettings } = get()
         if (!engine) return
         
         set({ isSimulating: true })
         
         try {
           const games = engine.simulateWeek()
+          const state = engine.getState()
           set({ 
             lastSimulatedGames: games,
-            state: engine.getState(),
+            state,
             isSimulating: false 
           })
+          
+          // Auto-save after simulation
+          SaveManager.autoSave(engine.save(), state, isRealDataMode, gameSettings)
         } catch (e) {
           set({ isSimulating: false })
         }
@@ -181,7 +249,7 @@ export const useGameStore = create<GameStore>()(
 
       // Simulate to next major event
       simulateToEvent: () => {
-        const { engine, state } = get()
+        const { engine, state, isRealDataMode, gameSettings } = get()
         if (!engine || !state) return
         
         set({ isSimulating: true })
@@ -194,10 +262,14 @@ export const useGameStore = create<GameStore>()(
             engine.endSeason()
           }
           
+          const newState = engine.getState()
           set({ 
-            state: engine.getState(),
+            state: newState,
             isSimulating: false 
           })
+          
+          // Auto-save after simulation
+          SaveManager.autoSave(engine.save(), newState, isRealDataMode, gameSettings)
         } catch (e) {
           set({ isSimulating: false })
         }
@@ -205,11 +277,15 @@ export const useGameStore = create<GameStore>()(
 
       // Advance to next phase
       advancePhase: () => {
-        const { engine } = get()
+        const { engine, isRealDataMode, gameSettings } = get()
         if (!engine) return
         
         engine.advancePhase()
-        set({ state: engine.getState() })
+        const newState = engine.getState()
+        set({ state: newState })
+        
+        // Auto-save after phase advance
+        SaveManager.autoSave(engine.save(), newState, isRealDataMode, gameSettings)
       },
 
       // Get user's team
