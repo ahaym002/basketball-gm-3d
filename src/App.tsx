@@ -11,7 +11,7 @@ import Trade from './pages/Trade'
 import Draft from './pages/Draft'
 import Finances from './pages/Finances'
 import PlayerProfile from './pages/PlayerProfile'
-import LiveGame from './pages/LiveGame'
+import MatchView from './pages/MatchView'
 
 function App() {
   const { isInitialized } = useGameStore()
@@ -21,21 +21,28 @@ function App() {
   }
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/roster" element={<Roster />} />
-        <Route path="/standings" element={<Standings />} />
-        <Route path="/schedule" element={<Schedule />} />
-        <Route path="/free-agents" element={<FreeAgents />} />
-        <Route path="/trade" element={<Trade />} />
-        <Route path="/draft" element={<Draft />} />
-        <Route path="/finances" element={<Finances />} />
-        <Route path="/player/:playerId" element={<PlayerProfile />} />
-        <Route path="/game/:gameId" element={<LiveGame />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      {/* Match view is outside Layout for full-screen experience */}
+      <Route path="/match/:gameId" element={<MatchView />} />
+      
+      {/* Main app routes with Layout */}
+      <Route path="/*" element={
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/roster" element={<Roster />} />
+            <Route path="/standings" element={<Standings />} />
+            <Route path="/schedule" element={<Schedule />} />
+            <Route path="/free-agents" element={<FreeAgents />} />
+            <Route path="/trade" element={<Trade />} />
+            <Route path="/draft" element={<Draft />} />
+            <Route path="/finances" element={<Finances />} />
+            <Route path="/player/:playerId" element={<PlayerProfile />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      } />
+    </Routes>
   )
 }
 

@@ -151,7 +151,7 @@ export default function Schedule() {
                           </div>
                         ) : (
                           <Link 
-                            to={`/game/${game.id}`}
+                            to={`/match/${game.id}`}
                             className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors"
                           >
                             <Play size={14} fill="currentColor" />
