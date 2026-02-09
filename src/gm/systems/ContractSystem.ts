@@ -4,7 +4,7 @@
 
 import { Player, Team, Contract, ContractType, CapException, LeagueState } from '../types';
 
-// 2024-25 NBA Salary Cap Values
+// 2025-26 NBA Salary Cap Values
 export const CAP_VALUES = {
   salaryCap: 140588000,
   luxuryTax: 170814000,

@@ -177,7 +177,7 @@ export default function WelcomeScreen({ onNewGame, onLoadGame }: WelcomeScreenPr
                       Real NBA Mode
                     </h3>
                     <p className="text-gray-400 text-sm mb-3">
-                      Play with real NBA 2024-25 rosters, salaries, and contracts.
+                      Play with real NBA 2025-26 rosters, salaries, and contracts.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-400 text-xs font-medium">

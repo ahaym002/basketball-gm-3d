@@ -302,7 +302,7 @@ function getSecondaryPosition(primary: Player['position']): Player['position'] |
 }
 
 function calculateBaseSalary(overall: number, age: number, experience: number): number {
-  // 2024-25 NBA salary scale approximations
+  // 2025-26 NBA salary scale approximations
   const minSalary = 1100000;
   const maxSalary = 50000000;
   const midLevelSalary = 12800000;

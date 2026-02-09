@@ -43,7 +43,7 @@ const LOTTERY_ODDS: Record<number, number> = {
   14: 0.5
 };
 
-// Rookie scale salaries by pick (2024-25 approximate)
+// Rookie scale salaries by pick (2025-26 approximate)
 const ROOKIE_SCALE: Record<number, number> = {
   1: 12100000, 2: 10900000, 3: 9800000, 4: 9300000, 5: 8800000,
   6: 8300000, 7: 7900000, 8: 7500000, 9: 7100000, 10: 6800000,

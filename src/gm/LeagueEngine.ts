@@ -63,7 +63,7 @@ export class LeagueEngine {
     
     // Load real NBA data if enabled and available
     if (this.useRealData && isRealDataAvailable()) {
-      console.log('🏀 Loading Real NBA 2024-25 data...');
+      console.log('🏀 Loading Real NBA 2025-26 data...');
       const realData = loadRealNBAData();
       teams = realData.teams;
       players = realData.players;
