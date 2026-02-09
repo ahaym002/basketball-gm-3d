@@ -1,0 +1,302 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - link "LA Los Angeles Lakers" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e8]: LA
+          - generic [ref=e9]: Los Angeles Lakers
+        - generic [ref=e10]:
+          - generic [ref=e11]: 2026-27
+          - generic [ref=e12]: Regular Season
+      - generic [ref=e13]:
+        - link "Dashboard" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img [ref=e15]
+          - text: Dashboard
+        - link "Roster" [ref=e21] [cursor=pointer]:
+          - /url: /roster
+          - img [ref=e22]
+          - text: Roster
+        - link "League" [ref=e27] [cursor=pointer]:
+          - /url: /standings
+          - img [ref=e28]
+          - text: League
+        - link "Schedule" [ref=e34] [cursor=pointer]:
+          - /url: /schedule
+          - img [ref=e35]
+          - text: Schedule
+        - link "Finances" [ref=e37] [cursor=pointer]:
+          - /url: /finances
+          - img [ref=e38]
+          - text: Finances
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: "0"
+          - generic [ref=e43]: "-"
+          - generic [ref=e44]: "0"
+        - button [ref=e45] [cursor=pointer]:
+          - img [ref=e46]
+  - generic [ref=e49]:
+    - complementary [ref=e50]:
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - heading "Team" [level=3] [ref=e53]
+          - navigation [ref=e54]:
+            - link "Dashboard" [ref=e55] [cursor=pointer]:
+              - /url: /
+              - img [ref=e56]
+              - generic [ref=e61]: Dashboard
+            - link "Roster" [ref=e62] [cursor=pointer]:
+              - /url: /roster
+              - img [ref=e63]
+              - generic [ref=e68]: Roster
+            - link "Schedule" [ref=e69] [cursor=pointer]:
+              - /url: /schedule
+              - img [ref=e70]
+              - generic [ref=e72]: Schedule
+            - link "Finances" [ref=e73] [cursor=pointer]:
+              - /url: /finances
+              - img [ref=e74]
+              - generic [ref=e78]: Finances
+        - generic [ref=e79]:
+          - heading "League" [level=3] [ref=e80]
+          - navigation [ref=e81]:
+            - link "Standings" [ref=e82] [cursor=pointer]:
+              - /url: /standings
+              - img [ref=e83]
+              - generic [ref=e89]: Standings
+        - generic [ref=e90]:
+          - heading "Transactions" [level=3] [ref=e91]
+          - navigation [ref=e92]:
+            - link "Free Agents" [ref=e93] [cursor=pointer]:
+              - /url: /free-agents
+              - img [ref=e94]
+              - generic [ref=e97]: Free Agents
+            - link "Trade Center" [ref=e98] [cursor=pointer]:
+              - /url: /trade
+              - img [ref=e99]
+              - generic [ref=e102]: Trade Center
+            - link "Draft" [ref=e103] [cursor=pointer]:
+              - /url: /draft
+              - img [ref=e104]
+              - generic [ref=e107]: Draft
+      - generic [ref=e109]:
+        - generic [ref=e111]:
+          - generic [ref=e112]: Season
+          - generic [ref=e113]: 0%
+        - generic [ref=e116]:
+          - generic [ref=e117]: Cap
+          - generic [ref=e118]: 83%
+    - main [ref=e121]:
+      - generic [ref=e123]:
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - heading "LAL Los Angeles Lakers" [level=1] [ref=e126]:
+              - generic [ref=e127]: LAL
+              - text: Los Angeles Lakers
+            - paragraph [ref=e128]: 2026-2027 Season • regular
+          - generic [ref=e130]:
+            - generic [ref=e131]: 0-0
+            - paragraph [ref=e132]: "#8 in Western"
+        - generic [ref=e133]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - paragraph [ref=e137]: Conference Rank
+              - paragraph [ref=e138]: "#8"
+              - paragraph [ref=e139]: Westernern
+            - img [ref=e141]
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - paragraph [ref=e150]: Current Streak
+              - paragraph [ref=e151]: "0"
+              - paragraph [ref=e152]: Win Streak
+            - img [ref=e154]
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - paragraph [ref=e160]: Payroll
+              - paragraph [ref=e161]: $112.3M
+              - paragraph [ref=e162]: "Cap: $136.0M"
+            - img [ref=e164]
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - paragraph [ref=e169]: Season Progress
+              - paragraph [ref=e170]: 0%
+              - paragraph [ref=e171]: 0/1231 games
+            - img [ref=e173]
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - generic [ref=e178]:
+              - generic [ref=e179]: Upcoming Games
+              - link "View All" [ref=e180] [cursor=pointer]:
+                - /url: /schedule
+            - generic [ref=e181]:
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - generic [ref=e184]: "@"
+                  - generic [ref=e185]: OKC
+                  - generic [ref=e186]: Oklahoma City Thunder
+                - generic [ref=e187]:
+                  - generic [ref=e188]: 0-0
+                  - link "Play" [ref=e189] [cursor=pointer]:
+                    - /url: /game/game-2026-960
+              - generic [ref=e190]:
+                - generic [ref=e191]:
+                  - generic [ref=e192]: vs
+                  - generic [ref=e193]: POR
+                  - generic [ref=e194]: Portland Trail Blazers
+                - generic [ref=e195]:
+                  - generic [ref=e196]: 0-0
+                  - link "Play" [ref=e197] [cursor=pointer]:
+                    - /url: /game/game-2026-999
+              - generic [ref=e198]:
+                - generic [ref=e199]:
+                  - generic [ref=e200]: "@"
+                  - generic [ref=e201]: UTA
+                  - generic [ref=e202]: Utah Jazz
+                - generic [ref=e203]:
+                  - generic [ref=e204]: 0-0
+                  - link "Play" [ref=e205] [cursor=pointer]:
+                    - /url: /game/game-2026-1035
+              - generic [ref=e206]:
+                - generic [ref=e207]:
+                  - generic [ref=e208]: "@"
+                  - generic [ref=e209]: DEN
+                  - generic [ref=e210]: Denver Nuggets
+                - generic [ref=e211]:
+                  - generic [ref=e212]: 0-0
+                  - link "Play" [ref=e213] [cursor=pointer]:
+                    - /url: /game/game-2026-865
+              - generic [ref=e214]:
+                - generic [ref=e215]:
+                  - generic [ref=e216]: "@"
+                  - generic [ref=e217]: SAC
+                  - generic [ref=e218]: Sacramento Kings
+                - generic [ref=e219]:
+                  - generic [ref=e220]: 0-0
+                  - link "Play" [ref=e221] [cursor=pointer]:
+                    - /url: /game/game-2026-1132
+          - generic [ref=e222]:
+            - generic [ref=e223]:
+              - generic [ref=e224]: Recent Results
+              - link "View All" [ref=e225] [cursor=pointer]:
+                - /url: /schedule
+            - generic [ref=e227]: No games played yet
+          - generic [ref=e228]:
+            - generic [ref=e229]:
+              - generic [ref=e230]: Westernern Conference
+              - link "View All" [ref=e231] [cursor=pointer]:
+                - /url: /standings
+            - generic [ref=e232]:
+              - generic [ref=e233]:
+                - generic [ref=e234]:
+                  - generic [ref=e235]: "1"
+                  - generic [ref=e236]: DEN
+                  - generic [ref=e237]: Denver
+                - generic [ref=e238]: 0-0
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - generic [ref=e241]: "2"
+                  - generic [ref=e242]: MIN
+                  - generic [ref=e243]: Minnesota
+                - generic [ref=e244]: 0-0
+              - generic [ref=e245]:
+                - generic [ref=e246]:
+                  - generic [ref=e247]: "3"
+                  - generic [ref=e248]: OKC
+                  - generic [ref=e249]: Oklahoma City
+                - generic [ref=e250]: 0-0
+              - generic [ref=e251]:
+                - generic [ref=e252]:
+                  - generic [ref=e253]: "4"
+                  - generic [ref=e254]: POR
+                  - generic [ref=e255]: Portland
+                - generic [ref=e256]: 0-0
+              - generic [ref=e257]:
+                - generic [ref=e258]:
+                  - generic [ref=e259]: "5"
+                  - generic [ref=e260]: UTA
+                  - generic [ref=e261]: Utah
+                - generic [ref=e262]: 0-0
+              - generic [ref=e263]:
+                - generic [ref=e264]:
+                  - generic [ref=e265]: "6"
+                  - generic [ref=e266]: GSW
+                  - generic [ref=e267]: Golden State
+                - generic [ref=e268]: 0-0
+              - generic [ref=e269]:
+                - generic [ref=e270]:
+                  - generic [ref=e271]: "7"
+                  - generic [ref=e272]: LAC
+                  - generic [ref=e273]: Los Angeles
+                - generic [ref=e274]: 0-0
+              - generic [ref=e275]:
+                - generic [ref=e276]:
+                  - generic [ref=e277]: "8"
+                  - generic [ref=e278]: LAL
+                  - generic [ref=e279]: Los Angeles
+                - generic [ref=e280]: 0-0
+        - generic [ref=e281]:
+          - generic [ref=e282]:
+            - generic [ref=e283]: Top Players
+            - link "Full Roster" [ref=e284] [cursor=pointer]:
+              - /url: /roster
+              - text: Full Roster
+              - img [ref=e285]
+          - generic [ref=e287]:
+            - link "PG 85 Bobby Phillips $39.3M/yr • 26yo" [ref=e288] [cursor=pointer]:
+              - /url: /player/player-1770670762557-glgythzex
+              - generic [ref=e289]:
+                - generic [ref=e290]:
+                  - img [ref=e291]
+                  - generic [ref=e293]: PG
+                - generic [ref=e294]: "85"
+              - paragraph [ref=e295]: Bobby Phillips
+              - paragraph [ref=e296]: $39.3M/yr • 26yo
+            - link "SG 75 Paul Phillips $25.0M/yr • 26yo" [ref=e297] [cursor=pointer]:
+              - /url: /player/player-1770670762557-z7yvnq4hf
+              - generic [ref=e298]:
+                - generic [ref=e300]: SG
+                - generic [ref=e301]: "75"
+              - paragraph [ref=e302]: Paul Phillips
+              - paragraph [ref=e303]: $25.0M/yr • 26yo
+            - link "PF 73 Joel Roberts $6.3M/yr • 28yo" [ref=e304] [cursor=pointer]:
+              - /url: /player/player-1770670762557-qwxle997h
+              - generic [ref=e305]:
+                - generic [ref=e307]: PF
+                - generic [ref=e308]: "73"
+              - paragraph [ref=e309]: Joel Roberts
+              - paragraph [ref=e310]: $6.3M/yr • 28yo
+            - link "C 71 Donovan Torres $7.7M/yr • 20yo" [ref=e311] [cursor=pointer]:
+              - /url: /player/player-1770670762557-nhaa09rt0
+              - generic [ref=e312]:
+                - generic [ref=e314]: C
+                - generic [ref=e315]: "71"
+              - paragraph [ref=e316]: Donovan Torres
+              - paragraph [ref=e317]: $7.7M/yr • 20yo
+            - link "SF 70 Cade Hill $6.2M/yr • 26yo" [ref=e318] [cursor=pointer]:
+              - /url: /player/player-1770670762557-3v2zka8jm
+              - generic [ref=e319]:
+                - generic [ref=e321]: SF
+                - generic [ref=e322]: "70"
+              - paragraph [ref=e323]: Cade Hill
+              - paragraph [ref=e324]: $6.2M/yr • 26yo
+  - generic [ref=e325]:
+    - generic [ref=e326]:
+      - button "Play 1 Day" [ref=e327] [cursor=pointer]:
+        - img [ref=e328]
+        - generic [ref=e330]: Play 1 Day
+      - button "Play 1 Week" [ref=e331] [cursor=pointer]:
+        - img [ref=e332]
+        - generic [ref=e335]: Play 1 Week
+      - button "Sim to Playoffs" [ref=e336] [cursor=pointer]:
+        - img [ref=e337]
+        - generic [ref=e339]: Sim to Playoffs
+    - button "PLAY" [active] [ref=e340] [cursor=pointer]:
+      - img [ref=e341]
+      - generic [ref=e343]: PLAY
+      - img [ref=e344]
+```

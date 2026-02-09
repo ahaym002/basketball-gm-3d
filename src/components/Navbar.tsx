@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { Trophy, Calendar, Users, DollarSign, Settings } from 'lucide-react'
 import clsx from 'clsx'
+import SettingsModal from './SettingsModal'
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: Trophy },
@@ -12,6 +14,7 @@ const navItems = [
 ]
 
 export default function Navbar() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const location = useLocation()
   const { state, getUserTeam } = useGameStore()
   const team = getUserTeam()
@@ -84,11 +87,20 @@ export default function Navbar() {
             </div>
           )}
           
-          <button className="p-2 rounded-lg hover:bg-surface-100 text-gray-400 hover:text-white transition-colors">
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-lg hover:bg-surface-100 text-gray-400 hover:text-white transition-colors"
+            title="Game Menu (Save/Load)"
+          >
             <Settings size={18} />
           </button>
         </div>
       </div>
+      
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </nav>
   )
 }
