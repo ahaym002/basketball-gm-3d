@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import clsx from 'clsx'
 
 type Filter = 'all' | 'upcoming' | 'played'
@@ -134,8 +135,8 @@ export default function Schedule() {
                         </div>
                       </div>
                       
-                      {/* Result */}
-                      <div className="w-24 text-right">
+                      {/* Result / Play Button */}
+                      <div className="w-32 text-right">
                         {game.played ? (
                           <div>
                             <span className={clsx(
@@ -149,7 +150,13 @@ export default function Schedule() {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-500 text-sm">-</span>
+                          <Link 
+                            to={`/game/${game.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            <Play size={14} fill="currentColor" />
+                            Play
+                          </Link>
                         )}
                       </div>
                     </div>

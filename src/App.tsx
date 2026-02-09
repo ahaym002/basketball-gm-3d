@@ -11,6 +11,7 @@ import Trade from './pages/Trade'
 import Draft from './pages/Draft'
 import Finances from './pages/Finances'
 import PlayerProfile from './pages/PlayerProfile'
+import LiveGame from './pages/LiveGame'
 
 function App() {
   const { isInitialized } = useGameStore()
@@ -31,6 +32,7 @@ function App() {
         <Route path="/draft" element={<Draft />} />
         <Route path="/finances" element={<Finances />} />
         <Route path="/player/:playerId" element={<PlayerProfile />} />
+        <Route path="/game/:gameId" element={<LiveGame />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

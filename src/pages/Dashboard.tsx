@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { 
   Trophy, 
@@ -9,7 +9,8 @@ import {
   DollarSign,
   ArrowRight,
   Star,
-  Clock
+  Clock,
+  Play
 } from 'lucide-react'
 import { formatCurrency, formatRecord, getWinPct } from '../utils/format'
 import clsx from 'clsx'
@@ -271,7 +272,7 @@ function GameRow({ game, userTeamId, teams }: GameRowProps) {
   const opponent = teams[isHome ? game.awayTeamId : game.homeTeamId]
   
   return (
-    <div className="flex items-center justify-between px-4 py-3 text-sm">
+    <div className="flex items-center justify-between px-4 py-3 text-sm group hover:bg-surface-100/50">
       <div className="flex items-center gap-3">
         <span className="text-gray-500 text-xs w-6">{isHome ? 'vs' : '@'}</span>
         <span 
@@ -282,9 +283,17 @@ function GameRow({ game, userTeamId, teams }: GameRowProps) {
         </span>
         <span>{opponent?.city} {opponent?.name}</span>
       </div>
-      <span className="text-gray-500">
-        {formatRecord(opponent?.wins || 0, opponent?.losses || 0)}
-      </span>
+      <div className="flex items-center gap-3">
+        <span className="text-gray-500">
+          {formatRecord(opponent?.wins || 0, opponent?.losses || 0)}
+        </span>
+        <Link 
+          to={`/game/${game.id}`}
+          className="opacity-0 group-hover:opacity-100 px-2 py-1 bg-primary text-white text-xs rounded transition-all"
+        >
+          Play
+        </Link>
+      </div>
     </div>
   )
 }
