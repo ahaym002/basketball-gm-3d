@@ -111,7 +111,7 @@ const SHOT_CLOCK = 24
 export class MatchEngine {
   private state: MatchState
   private onUpdate: (state: MatchState) => void
-  private intervalId: NodeJS.Timeout | null = null
+  private intervalId: ReturnType<typeof setInterval> | null = null
   private tickRate = 100 // ms between updates at 1x speed
   
   constructor(

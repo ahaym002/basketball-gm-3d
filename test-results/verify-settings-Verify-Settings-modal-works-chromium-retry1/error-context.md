@@ -90,7 +90,7 @@
           - generic [ref=e113]: 0%
         - generic [ref=e116]:
           - generic [ref=e117]: Cap
-          - generic [ref=e118]: 83%
+          - generic [ref=e118]: 75%
     - main [ref=e121]:
       - generic [ref=e123]:
         - generic [ref=e124]:
@@ -118,14 +118,14 @@
           - generic [ref=e158]:
             - generic [ref=e159]:
               - paragraph [ref=e160]: Payroll
-              - paragraph [ref=e161]: $112.3M
+              - paragraph [ref=e161]: $102.5M
               - paragraph [ref=e162]: "Cap: $136.0M"
             - img [ref=e164]
           - generic [ref=e167]:
             - generic [ref=e168]:
               - paragraph [ref=e169]: Season Progress
               - paragraph [ref=e170]: 0%
-              - paragraph [ref=e171]: 0/1231 games
+              - paragraph [ref=e171]: 0/1233 games
             - img [ref=e173]
         - generic [ref=e176]:
           - generic [ref=e177]:
@@ -137,12 +137,12 @@
               - generic [ref=e182]:
                 - generic [ref=e183]:
                   - generic [ref=e184]: "@"
-                  - generic [ref=e185]: OKC
-                  - generic [ref=e186]: Oklahoma City Thunder
+                  - generic [ref=e185]: TOR
+                  - generic [ref=e186]: Toronto Raptors
                 - generic [ref=e187]:
                   - generic [ref=e188]: 0-0
                   - link "Play" [ref=e189] [cursor=pointer]:
-                    - /url: /game/game-2026-960
+                    - /url: /game/game-2026-355
               - generic [ref=e190]:
                 - generic [ref=e191]:
                   - generic [ref=e192]: vs
@@ -151,34 +151,34 @@
                 - generic [ref=e195]:
                   - generic [ref=e196]: 0-0
                   - link "Play" [ref=e197] [cursor=pointer]:
-                    - /url: /game/game-2026-999
+                    - /url: /game/game-2026-998
               - generic [ref=e198]:
                 - generic [ref=e199]:
                   - generic [ref=e200]: "@"
-                  - generic [ref=e201]: UTA
-                  - generic [ref=e202]: Utah Jazz
+                  - generic [ref=e201]: BOS
+                  - generic [ref=e202]: Boston Celtics
                 - generic [ref=e203]:
                   - generic [ref=e204]: 0-0
                   - link "Play" [ref=e205] [cursor=pointer]:
-                    - /url: /game/game-2026-1035
+                    - /url: /game/game-2026-69
               - generic [ref=e206]:
                 - generic [ref=e207]:
                   - generic [ref=e208]: "@"
-                  - generic [ref=e209]: DEN
-                  - generic [ref=e210]: Denver Nuggets
+                  - generic [ref=e209]: GSW
+                  - generic [ref=e210]: Golden State Warriors
                 - generic [ref=e211]:
                   - generic [ref=e212]: 0-0
                   - link "Play" [ref=e213] [cursor=pointer]:
-                    - /url: /game/game-2026-865
+                    - /url: /game/game-2026-1071
               - generic [ref=e214]:
                 - generic [ref=e215]:
                   - generic [ref=e216]: "@"
-                  - generic [ref=e217]: SAC
-                  - generic [ref=e218]: Sacramento Kings
+                  - generic [ref=e217]: OKC
+                  - generic [ref=e218]: Oklahoma City Thunder
                 - generic [ref=e219]:
                   - generic [ref=e220]: 0-0
                   - link "Play" [ref=e221] [cursor=pointer]:
-                    - /url: /game/game-2026-1132
+                    - /url: /game/game-2026-959
           - generic [ref=e222]:
             - generic [ref=e223]:
               - generic [ref=e224]: Recent Results
@@ -247,56 +247,45 @@
               - text: Full Roster
               - img [ref=e285]
           - generic [ref=e287]:
-            - link "PG 85 Bobby Phillips $39.3M/yr • 26yo" [ref=e288] [cursor=pointer]:
-              - /url: /player/player-1770670762557-glgythzex
+            - link "PG 83 Giannis Evans $28.5M/yr • 27yo" [ref=e288] [cursor=pointer]:
+              - /url: /player/player-1770671151585-eksgvziga
               - generic [ref=e289]:
                 - generic [ref=e290]:
                   - img [ref=e291]
                   - generic [ref=e293]: PG
-                - generic [ref=e294]: "85"
-              - paragraph [ref=e295]: Bobby Phillips
-              - paragraph [ref=e296]: $39.3M/yr • 26yo
-            - link "SG 75 Paul Phillips $25.0M/yr • 26yo" [ref=e297] [cursor=pointer]:
-              - /url: /player/player-1770670762557-z7yvnq4hf
+                - generic [ref=e294]: "83"
+              - paragraph [ref=e295]: Giannis Evans
+              - paragraph [ref=e296]: $28.5M/yr • 27yo
+            - link "SG 73 Cade Harris $12.4M/yr • 31yo" [ref=e297] [cursor=pointer]:
+              - /url: /player/player-1770671151585-2y2arm4vf
               - generic [ref=e298]:
                 - generic [ref=e300]: SG
-                - generic [ref=e301]: "75"
-              - paragraph [ref=e302]: Paul Phillips
-              - paragraph [ref=e303]: $25.0M/yr • 26yo
-            - link "PF 73 Joel Roberts $6.3M/yr • 28yo" [ref=e304] [cursor=pointer]:
-              - /url: /player/player-1770670762557-qwxle997h
+                - generic [ref=e301]: "73"
+              - paragraph [ref=e302]: Cade Harris
+              - paragraph [ref=e303]: $12.4M/yr • 31yo
+            - link "PF 73 Keegan Robinson $14.4M/yr • 33yo" [ref=e304] [cursor=pointer]:
+              - /url: /player/player-1770671151585-i86vnx7rs
               - generic [ref=e305]:
                 - generic [ref=e307]: PF
                 - generic [ref=e308]: "73"
-              - paragraph [ref=e309]: Joel Roberts
-              - paragraph [ref=e310]: $6.3M/yr • 28yo
-            - link "C 71 Donovan Torres $7.7M/yr • 20yo" [ref=e311] [cursor=pointer]:
-              - /url: /player/player-1770670762557-nhaa09rt0
+              - paragraph [ref=e309]: Keegan Robinson
+              - paragraph [ref=e310]: $14.4M/yr • 33yo
+            - link "SF 72 Devin Young $14.0M/yr • 24yo" [ref=e311] [cursor=pointer]:
+              - /url: /player/player-1770671151585-4tlywf4in
               - generic [ref=e312]:
-                - generic [ref=e314]: C
-                - generic [ref=e315]: "71"
-              - paragraph [ref=e316]: Donovan Torres
-              - paragraph [ref=e317]: $7.7M/yr • 20yo
-            - link "SF 70 Cade Hill $6.2M/yr • 26yo" [ref=e318] [cursor=pointer]:
-              - /url: /player/player-1770670762557-3v2zka8jm
+                - generic [ref=e314]: SF
+                - generic [ref=e315]: "72"
+              - paragraph [ref=e316]: Devin Young
+              - paragraph [ref=e317]: $14.0M/yr • 24yo
+            - link "C 72 OG Baker $6.9M/yr • 29yo" [ref=e318] [cursor=pointer]:
+              - /url: /player/player-1770671151585-6s9w9l9mu
               - generic [ref=e319]:
-                - generic [ref=e321]: SF
-                - generic [ref=e322]: "70"
-              - paragraph [ref=e323]: Cade Hill
-              - paragraph [ref=e324]: $6.2M/yr • 26yo
-  - generic [ref=e325]:
-    - generic [ref=e326]:
-      - button "Play 1 Day" [ref=e327] [cursor=pointer]:
-        - img [ref=e328]
-        - generic [ref=e330]: Play 1 Day
-      - button "Play 1 Week" [ref=e331] [cursor=pointer]:
-        - img [ref=e332]
-        - generic [ref=e335]: Play 1 Week
-      - button "Sim to Playoffs" [ref=e336] [cursor=pointer]:
-        - img [ref=e337]
-        - generic [ref=e339]: Sim to Playoffs
-    - button "PLAY" [active] [ref=e340] [cursor=pointer]:
-      - img [ref=e341]
-      - generic [ref=e343]: PLAY
-      - img [ref=e344]
+                - generic [ref=e321]: C
+                - generic [ref=e322]: "72"
+              - paragraph [ref=e323]: OG Baker
+              - paragraph [ref=e324]: $6.9M/yr • 29yo
+  - button "PLAY" [ref=e326] [cursor=pointer]:
+    - img [ref=e327]
+    - generic [ref=e329]: PLAY
+    - img [ref=e330]
 ```

@@ -90,7 +90,7 @@
           - generic [ref=e113]: 0%
         - generic [ref=e116]:
           - generic [ref=e117]: Cap
-          - generic [ref=e118]: 86%
+          - generic [ref=e118]: 81%
     - main [ref=e121]:
       - generic [ref=e123]:
         - generic [ref=e124]:
@@ -118,14 +118,14 @@
           - generic [ref=e158]:
             - generic [ref=e159]:
               - paragraph [ref=e160]: Payroll
-              - paragraph [ref=e161]: $116.6M
+              - paragraph [ref=e161]: $110.4M
               - paragraph [ref=e162]: "Cap: $136.0M"
             - img [ref=e164]
           - generic [ref=e167]:
             - generic [ref=e168]:
               - paragraph [ref=e169]: Season Progress
               - paragraph [ref=e170]: 0%
-              - paragraph [ref=e171]: 0/1222 games
+              - paragraph [ref=e171]: 0/1228 games
             - img [ref=e173]
         - generic [ref=e176]:
           - generic [ref=e177]:
@@ -136,49 +136,49 @@
             - generic [ref=e181]:
               - generic [ref=e182]:
                 - generic [ref=e183]:
-                  - generic [ref=e184]: "@"
-                  - generic [ref=e185]: NYK
-                  - generic [ref=e186]: New York Knicks
+                  - generic [ref=e184]: vs
+                  - generic [ref=e185]: ORL
+                  - generic [ref=e186]: Orlando Magic
                 - generic [ref=e187]:
                   - generic [ref=e188]: 0-0
                   - link "Play" [ref=e189] [cursor=pointer]:
-                    - /url: /game/game-2026-217
+                    - /url: /game/game-2026-794
               - generic [ref=e190]:
                 - generic [ref=e191]:
-                  - generic [ref=e192]: "@"
-                  - generic [ref=e193]: DEN
-                  - generic [ref=e194]: Denver Nuggets
+                  - generic [ref=e192]: vs
+                  - generic [ref=e193]: IND
+                  - generic [ref=e194]: Indiana Pacers
                 - generic [ref=e195]:
                   - generic [ref=e196]: 0-0
                   - link "Play" [ref=e197] [cursor=pointer]:
-                    - /url: /game/game-2026-865
+                    - /url: /game/game-2026-586
               - generic [ref=e198]:
                 - generic [ref=e199]:
-                  - generic [ref=e200]: vs
-                  - generic [ref=e201]: HOU
-                  - generic [ref=e202]: Houston Rockets
+                  - generic [ref=e200]: "@"
+                  - generic [ref=e201]: MIN
+                  - generic [ref=e202]: Minnesota Timberwolves
                 - generic [ref=e203]:
                   - generic [ref=e204]: 0-0
                   - link "Play" [ref=e205] [cursor=pointer]:
-                    - /url: /game/game-2026-1128
+                    - /url: /game/game-2026-913
               - generic [ref=e206]:
                 - generic [ref=e207]:
-                  - generic [ref=e208]: "@"
-                  - generic [ref=e209]: MEM
-                  - generic [ref=e210]: Memphis Grizzlies
+                  - generic [ref=e208]: vs
+                  - generic [ref=e209]: CHI
+                  - generic [ref=e210]: Chicago Bulls
                 - generic [ref=e211]:
                   - generic [ref=e212]: 0-0
                   - link "Play" [ref=e213] [cursor=pointer]:
-                    - /url: /game/game-2026-1132
+                    - /url: /game/game-2026-418
               - generic [ref=e214]:
                 - generic [ref=e215]:
                   - generic [ref=e216]: "@"
-                  - generic [ref=e217]: NOP
-                  - generic [ref=e218]: New Orleans Pelicans
+                  - generic [ref=e217]: NYK
+                  - generic [ref=e218]: New York Knicks
                 - generic [ref=e219]:
                   - generic [ref=e220]: 0-0
                   - link "Play" [ref=e221] [cursor=pointer]:
-                    - /url: /game/game-2026-1137
+                    - /url: /game/game-2026-221
           - generic [ref=e222]:
             - generic [ref=e223]:
               - generic [ref=e224]: Recent Results
@@ -247,56 +247,45 @@
               - text: Full Roster
               - img [ref=e285]
           - generic [ref=e287]:
-            - link "SG 85 Michael Allen $30.7M/yr • 20yo" [ref=e288] [cursor=pointer]:
-              - /url: /player/player-1770670771712-158f2dlrb
+            - link "PG 80 Damian Harris $30.9M/yr • 34yo" [ref=e288] [cursor=pointer]:
+              - /url: /player/player-1770671138499-dm2p9rpej
               - generic [ref=e289]:
                 - generic [ref=e290]:
                   - img [ref=e291]
-                  - generic [ref=e293]: SG
-                - generic [ref=e294]: "85"
-              - paragraph [ref=e295]: Michael Allen
-              - paragraph [ref=e296]: $30.7M/yr • 20yo
-            - link "PG 83 Nikola Torres $27.1M/yr • 23yo" [ref=e297] [cursor=pointer]:
-              - /url: /player/player-1770670771712-6kcnlrl7v
+                  - generic [ref=e293]: PG
+                - generic [ref=e294]: "80"
+              - paragraph [ref=e295]: Damian Harris
+              - paragraph [ref=e296]: $30.9M/yr • 34yo
+            - link "PF 74 Jalen Carter $10.8M/yr • 23yo" [ref=e297] [cursor=pointer]:
+              - /url: /player/player-1770671138499-grpxnd75m
               - generic [ref=e298]:
-                - generic [ref=e300]: PG
-                - generic [ref=e301]: "83"
-              - paragraph [ref=e302]: Nikola Torres
-              - paragraph [ref=e303]: $27.1M/yr • 23yo
-            - link "PF 73 Ja Jackson $9.7M/yr • 29yo" [ref=e304] [cursor=pointer]:
-              - /url: /player/player-1770670771712-gyhtgj6r9
+                - generic [ref=e300]: PF
+                - generic [ref=e301]: "74"
+              - paragraph [ref=e302]: Jalen Carter
+              - paragraph [ref=e303]: $10.8M/yr • 23yo
+            - link "C 74 Jabari Wilson $13.6M/yr • 26yo" [ref=e304] [cursor=pointer]:
+              - /url: /player/player-1770671138499-d4iupbpot
               - generic [ref=e305]:
-                - generic [ref=e307]: PF
-                - generic [ref=e308]: "73"
-              - paragraph [ref=e309]: Ja Jackson
-              - paragraph [ref=e310]: $9.7M/yr • 29yo
-            - link "SF 72 Lauri Martin $10.0M/yr • 22yo" [ref=e311] [cursor=pointer]:
-              - /url: /player/player-1770670771712-3cc98mgjs
+                - generic [ref=e307]: C
+                - generic [ref=e308]: "74"
+              - paragraph [ref=e309]: Jabari Wilson
+              - paragraph [ref=e310]: $13.6M/yr • 26yo
+            - link "SF 72 LeBron Brown $14.3M/yr • 22yo" [ref=e311] [cursor=pointer]:
+              - /url: /player/player-1770671138499-gckbqkij9
               - generic [ref=e312]:
                 - generic [ref=e314]: SF
                 - generic [ref=e315]: "72"
-              - paragraph [ref=e316]: Lauri Martin
-              - paragraph [ref=e317]: $10.0M/yr • 22yo
-            - link "C 72 Russell Phillips $10.5M/yr • 19yo" [ref=e318] [cursor=pointer]:
-              - /url: /player/player-1770670771712-5imdi2222
+              - paragraph [ref=e316]: LeBron Brown
+              - paragraph [ref=e317]: $14.3M/yr • 22yo
+            - link "SG 71 Jrue Wilson $10.8M/yr • 28yo" [ref=e318] [cursor=pointer]:
+              - /url: /player/player-1770671138499-9rye7uzbo
               - generic [ref=e319]:
-                - generic [ref=e321]: C
-                - generic [ref=e322]: "72"
-              - paragraph [ref=e323]: Russell Phillips
-              - paragraph [ref=e324]: $10.5M/yr • 19yo
-  - generic [ref=e325]:
-    - generic [ref=e326]:
-      - button "Play 1 Day" [ref=e327] [cursor=pointer]:
-        - img [ref=e328]
-        - generic [ref=e330]: Play 1 Day
-      - button "Play 1 Week" [ref=e331] [cursor=pointer]:
-        - img [ref=e332]
-        - generic [ref=e335]: Play 1 Week
-      - button "Sim to Playoffs" [ref=e336] [cursor=pointer]:
-        - img [ref=e337]
-        - generic [ref=e339]: Sim to Playoffs
-    - button "PLAY" [active] [ref=e340] [cursor=pointer]:
-      - img [ref=e341]
-      - generic [ref=e343]: PLAY
-      - img [ref=e344]
+                - generic [ref=e321]: SG
+                - generic [ref=e322]: "71"
+              - paragraph [ref=e323]: Jrue Wilson
+              - paragraph [ref=e324]: $10.8M/yr • 28yo
+  - button "PLAY" [ref=e326] [cursor=pointer]:
+    - img [ref=e327]
+    - generic [ref=e329]: PLAY
+    - img [ref=e330]
 ```

@@ -37,7 +37,7 @@ export default function MatchView() {
     getBoxScore,
   } = useMatchStore();
   
-  const simIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const simIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [initialized, setInitialized] = useState(false);
   
   // Initialize match
