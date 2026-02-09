@@ -13,6 +13,8 @@ import { CAP_VALUES, processEndOfSeason } from './systems/ContractSystem';
 import { generateCoachingStaff, ExtendedCoach, generateCoach as generateExtendedCoach } from './systems/CoachingSystem';
 import { createDefaultPhilosophy, createDefaultPlaybook, createDefaultRotation, createDefaultIdentity, TeamPhilosophy, RotationSettings } from './systems/TeamStrategy';
 import { selectAllStars, simulateAllStarGame, AllStarGame, getAllStarDisplay } from './systems/AllStarSystem';
+import { loadRealNBAData, isRealDataAvailable } from './data/realDataLoader';
+
 export interface LeagueEngineOptions {
   useRealData?: boolean;
 }
@@ -59,8 +61,62 @@ export class LeagueEngine {
     let players: Record<string, Player>;
     let freeAgents: string[];
     
-    // Use generated data
-    {
+    // Load real NBA data if enabled and available
+    if (this.useRealData && isRealDataAvailable()) {
+      console.log('🏀 Loading Real NBA 2024-25 data...');
+      const realData = loadRealNBAData();
+      teams = realData.teams;
+      players = realData.players;
+      freeAgents = realData.freeAgents;
+      
+      // Initialize coaching staff and strategy for real teams
+      for (const team of Object.values(teams)) {
+        const coachingStaff = generateCoachingStaff();
+        team.coach = coachingStaff.headCoach;
+        
+        const rosterPlayers = team.roster
+          .map(id => players[id])
+          .filter(Boolean) as Player[];
+        
+        team.strategy = {
+          philosophy: createDefaultPhilosophy(),
+          rotation: createDefaultRotation(rosterPlayers),
+          playbook: createDefaultPlaybook(),
+          identity: createDefaultIdentity(),
+          coachingStaff
+        };
+        
+        // Align philosophy with coach preferences
+        if (team.strategy.philosophy && coachingStaff.headCoach.preferredOffense) {
+          team.strategy.philosophy.offensiveSystem = coachingStaff.headCoach.preferredOffense;
+          team.strategy.philosophy.defensiveScheme = coachingStaff.headCoach.preferredDefense;
+          team.strategy.philosophy.pace = coachingStaff.headCoach.preferredPace;
+          team.strategy.philosophy.developmentFocus = coachingStaff.headCoach.developmentFocus;
+        }
+        
+        // Generate draft picks for next 7 years
+        for (let y = 0; y < 7; y++) {
+          if (!team.draftPicks.some(p => p.year === year + 1 + y && p.round === 1)) {
+            team.draftPicks.push({
+              year: year + 1 + y,
+              round: 1,
+              originalTeamId: team.id,
+              currentTeamId: team.id,
+              isSwap: false
+            });
+          }
+          if (!team.draftPicks.some(p => p.year === year + 1 + y && p.round === 2)) {
+            team.draftPicks.push({
+              year: year + 1 + y,
+              round: 2,
+              originalTeamId: team.id,
+              currentTeamId: team.id,
+              isSwap: false
+            });
+          }
+        }
+      }
+    } else {
       // Use generated data (default behavior)
       teams = initializeAllTeams();
       players = {};
