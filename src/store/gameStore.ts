@@ -1,11 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { LeagueEngine } from '../gm/LeagueEngine'
+import { LeagueEngine, LeagueEngineOptions } from '../gm/LeagueEngine'
 import { LeagueState, Team, Player, Game, DraftProspect } from '../gm/types'
+
+interface GameInitOptions {
+  useRealData?: boolean;
+}
 
 interface GameStore {
   // Core state
   isInitialized: boolean
+  isRealDataMode: boolean
   engine: LeagueEngine | null
   state: LeagueState | null
   
@@ -15,7 +20,7 @@ interface GameStore {
   notifications: Notification[]
   
   // Actions
-  initializeGame: (teamId: string) => void
+  initializeGame: (teamId: string, options?: GameInitOptions) => void
   resetGame: () => void
   
   // Simulation
@@ -78,15 +83,18 @@ export const useGameStore = create<GameStore>()(
     (set, get) => ({
       // Initial state
       isInitialized: false,
+      isRealDataMode: false,
       engine: null,
       state: null,
       isSimulating: false,
       lastSimulatedGames: [],
       notifications: [],
 
-      // Initialize game with selected team
-      initializeGame: (teamId: string) => {
-        const engine = new LeagueEngine(teamId)
+      // Initialize game with selected team and options
+      initializeGame: (teamId: string, options: GameInitOptions = {}) => {
+        const engine = new LeagueEngine(teamId, {
+          useRealData: options.useRealData ?? false
+        })
         
         engine.setOnStateChange((newState) => {
           set({ state: newState })
@@ -94,6 +102,7 @@ export const useGameStore = create<GameStore>()(
         
         set({
           isInitialized: true,
+          isRealDataMode: options.useRealData ?? false,
           engine,
           state: engine.getState(),
         })

@@ -13,15 +13,27 @@ import { CAP_VALUES, processEndOfSeason } from './systems/ContractSystem';
 import { generateCoachingStaff, ExtendedCoach, generateCoach as generateExtendedCoach } from './systems/CoachingSystem';
 import { createDefaultPhilosophy, createDefaultPlaybook, createDefaultRotation, createDefaultIdentity, TeamPhilosophy, RotationSettings } from './systems/TeamStrategy';
 import { selectAllStars, simulateAllStarGame, AllStarGame, getAllStarDisplay } from './systems/AllStarSystem';
+export interface LeagueEngineOptions {
+  useRealData?: boolean;
+}
 
 export class LeagueEngine {
   private state: LeagueState;
   private draftState: DraftState | null = null;
   private allStarData: AllStarGame | null = null;
   private onStateChange?: (state: LeagueState) => void;
+  private useRealData: boolean;
   
-  constructor(userTeamId: string = 'LAL') {
+  constructor(userTeamId: string = 'LAL', options: LeagueEngineOptions = {}) {
+    this.useRealData = options.useRealData ?? false;
     this.state = this.initializeLeague(userTeamId);
+  }
+
+  /**
+   * Check if real NBA data mode is available
+   */
+  static isRealDataModeAvailable(): boolean {
+    return false; // Real data not yet implemented
   }
   
   private initializeLeague(userTeamId: string): LeagueState {
@@ -43,68 +55,73 @@ export class LeagueEngine {
       draftLotteryTeams: 14
     };
     
-    // Initialize all 30 teams
-    const teams = initializeAllTeams();
+    let teams: Record<string, Team>;
+    let players: Record<string, Player>;
+    let freeAgents: string[];
     
-    // Generate players for each team
-    const players: Record<string, Player> = {};
-    
-    for (const team of Object.values(teams)) {
-      const roster = generateRoster(team.id, 15);
+    // Use generated data
+    {
+      // Use generated data (default behavior)
+      teams = initializeAllTeams();
+      players = {};
+      freeAgents = [];
       
-      for (const player of roster) {
-        players[player.id] = player;
-        team.roster.push(player.id);
-        team.payroll += player.contract.salary;
+      for (const team of Object.values(teams)) {
+        const roster = generateRoster(team.id, 15);
+        
+        for (const player of roster) {
+          players[player.id] = player;
+          team.roster.push(player.id);
+          team.payroll += player.contract.salary;
+        }
+        
+        // Generate draft picks for next 7 years
+        for (let y = 0; y < 7; y++) {
+          team.draftPicks.push({
+            year: year + 1 + y,
+            round: 1,
+            originalTeamId: team.id,
+            currentTeamId: team.id,
+            isSwap: false
+          });
+          team.draftPicks.push({
+            year: year + 1 + y,
+            round: 2,
+            originalTeamId: team.id,
+            currentTeamId: team.id,
+            isSwap: false
+          });
+        }
+        
+        // Initialize coaching staff and team strategy
+        const coachingStaff = generateCoachingStaff();
+        team.coach = coachingStaff.headCoach;
+        
+        const rosterPlayers = roster.map(id => typeof id === 'string' ? players[id] : id).filter(Boolean) as Player[];
+        
+        team.strategy = {
+          philosophy: createDefaultPhilosophy(),
+          rotation: createDefaultRotation(rosterPlayers),
+          playbook: createDefaultPlaybook(),
+          identity: createDefaultIdentity(),
+          coachingStaff
+        };
+        
+        // Align philosophy with coach preferences
+        if (team.strategy.philosophy && coachingStaff.headCoach.preferredOffense) {
+          team.strategy.philosophy.offensiveSystem = coachingStaff.headCoach.preferredOffense;
+          team.strategy.philosophy.defensiveScheme = coachingStaff.headCoach.preferredDefense;
+          team.strategy.philosophy.pace = coachingStaff.headCoach.preferredPace;
+          team.strategy.philosophy.developmentFocus = coachingStaff.headCoach.developmentFocus;
+        }
       }
       
-      // Generate draft picks for next 7 years
-      for (let y = 0; y < 7; y++) {
-        team.draftPicks.push({
-          year: year + 1 + y,
-          round: 1,
-          originalTeamId: team.id,
-          currentTeamId: team.id,
-          isSwap: false
-        });
-        team.draftPicks.push({
-          year: year + 1 + y,
-          round: 2,
-          originalTeamId: team.id,
-          currentTeamId: team.id,
-          isSwap: false
-        });
+      // Generate free agents for non-real data mode
+      const freeAgentsList = generateFreeAgents(100);
+      for (const fa of freeAgentsList) {
+        players[fa.id] = fa;
+        freeAgents.push(fa.id);
       }
-      
-      // Initialize coaching staff and team strategy
-      const coachingStaff = generateCoachingStaff();
-      team.coach = coachingStaff.headCoach;
-      
-      const rosterPlayers = roster.map(id => typeof id === 'string' ? players[id] : id).filter(Boolean) as Player[];
-      
-      team.strategy = {
-        philosophy: createDefaultPhilosophy(),
-        rotation: createDefaultRotation(rosterPlayers),
-        playbook: createDefaultPlaybook(),
-        identity: createDefaultIdentity(),
-        coachingStaff
-      };
-      
-      // Align philosophy with coach preferences
-      if (team.strategy.philosophy && coachingStaff.headCoach.preferredOffense) {
-        team.strategy.philosophy.offensiveSystem = coachingStaff.headCoach.preferredOffense;
-        team.strategy.philosophy.defensiveScheme = coachingStaff.headCoach.preferredDefense;
-        team.strategy.philosophy.pace = coachingStaff.headCoach.preferredPace;
-        team.strategy.philosophy.developmentFocus = coachingStaff.headCoach.developmentFocus;
-      }
-    }
-    
-    // Generate free agents
-    const freeAgentsList = generateFreeAgents(100);
-    const freeAgents: string[] = [];
-    for (const fa of freeAgentsList) {
-      players[fa.id] = fa;
-      freeAgents.push(fa.id);
     }
     
     // Initialize season

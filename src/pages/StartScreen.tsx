@@ -1,15 +1,17 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { LeagueEngine } from '../gm/LeagueEngine'
 import { NBA_TEAMS } from '../gm/data/teams'
 import { 
   Trophy, Users, Calendar, Star, ChevronDown, TrendingUp, TrendingDown,
-  Filter, SortAsc, DollarSign, Target, Shield, Zap, Award
+  Filter, SortAsc, DollarSign, Target, Shield, Zap, Award, Database
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import clsx from 'clsx'
 
 type SortOption = 'name' | 'championships' | 'difficulty'
 type FilterOption = 'all' | 'Eastern' | 'Western' | 'contenders' | 'rebuilding'
+type GameMode = 'generated' | 'real'
 
 // Calculate team difficulty based on championships and history
 function getTeamDifficulty(team: typeof NBA_TEAMS[0]): { level: 'easy' | 'medium' | 'hard'; label: string; description: string } {
@@ -63,7 +65,14 @@ export default function StartScreen() {
   const [sortBy, setSortBy] = useState<SortOption>('name')
   const [showFilters, setShowFilters] = useState(false)
   const [hoveredTeam, setHoveredTeam] = useState<string | null>(null)
+  const [gameMode, setGameMode] = useState<GameMode>('generated')
+  const [realDataAvailable, setRealDataAvailable] = useState(false)
   const { initializeGame } = useGameStore()
+  
+  // Check if real NBA data is available
+  useEffect(() => {
+    setRealDataAvailable(LeagueEngine.isRealDataModeAvailable())
+  }, [])
   
   const teams = useMemo(() => {
     let filtered = [...NBA_TEAMS]
@@ -93,7 +102,7 @@ export default function StartScreen() {
   
   const handleStart = () => {
     if (selectedTeam) {
-      initializeGame(selectedTeam)
+      initializeGame(selectedTeam, { useRealData: gameMode === 'real' })
     }
   }
   
@@ -121,7 +130,7 @@ export default function StartScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="flex justify-center flex-wrap gap-6 text-sm text-gray-500"
+            className="flex justify-center flex-wrap gap-6 text-sm text-gray-500 mb-6"
           >
             <div className="flex items-center gap-2">
               <Trophy className="text-primary" size={18} />
@@ -136,6 +145,54 @@ export default function StartScreen() {
               <span>Multi-Year Dynasties</span>
             </div>
           </motion.div>
+          
+          {/* Game Mode Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center gap-3"
+          >
+            <button
+              onClick={() => setGameMode('generated')}
+              className={clsx(
+                'flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all',
+                gameMode === 'generated'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                  : 'bg-surface-100 text-gray-400 hover:text-white hover:bg-surface-200'
+              )}
+            >
+              <Users size={18} />
+              Generated Rosters
+            </button>
+            <button
+              onClick={() => realDataAvailable && setGameMode('real')}
+              disabled={!realDataAvailable}
+              className={clsx(
+                'flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all',
+                !realDataAvailable && 'opacity-50 cursor-not-allowed',
+                gameMode === 'real'
+                  ? 'bg-accent text-white shadow-lg shadow-accent/25'
+                  : 'bg-surface-100 text-gray-400 hover:text-white hover:bg-surface-200'
+              )}
+            >
+              <Database size={18} />
+              Real NBA 2024-25
+              {!realDataAvailable && (
+                <span className="text-xs ml-1">(Coming Soon)</span>
+              )}
+            </button>
+          </motion.div>
+          
+          {gameMode === 'real' && realDataAvailable && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center text-sm text-accent mt-3"
+            >
+              🏀 Play with real NBA players, rosters, and contracts from the 2024-25 season!
+            </motion.p>
+          )}
         </div>
       </div>
       

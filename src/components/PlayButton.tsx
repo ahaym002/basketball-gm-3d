@@ -12,31 +12,21 @@ export default function PlayButton() {
   
   // Wrap actions to provide feedback
   const handleSimulateDay = useCallback(() => {
-    const games = simulateDay()
-    if (games && games.length > 0) {
-      addNotification({
-        type: 'info',
-        title: 'Day Simulated',
-        message: `${games.length} game${games.length > 1 ? 's' : ''} played`
-      })
-    } else if (phase === 'regular') {
-      addNotification({
-        type: 'info',
-        title: 'No Games Today',
-        message: 'Advancing to next game day...'
-      })
-    }
-  }, [simulateDay, addNotification, phase])
+    simulateDay()
+    addNotification({
+      type: 'info',
+      title: 'Day Simulated',
+      message: 'Games have been simulated'
+    })
+  }, [simulateDay, addNotification])
   
   const handleSimulateWeek = useCallback(() => {
-    const games = simulateWeek()
-    if (games && games.length > 0) {
-      addNotification({
-        type: 'info',
-        title: 'Week Simulated',
-        message: `${games.length} game${games.length > 1 ? 's' : ''} played this week`
-      })
-    }
+    simulateWeek()
+    addNotification({
+      type: 'info',
+      title: 'Week Simulated', 
+      message: 'A week of games has been simulated'
+    })
   }, [simulateWeek, addNotification])
   
   const handleAdvancePhase = useCallback(() => {
