@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { 
@@ -10,12 +11,15 @@ import {
   ArrowRight,
   Star,
   Clock,
-  Play
+  Play,
+  Save,
+  Check
 } from 'lucide-react'
 import { formatCurrency, formatRecord, getWinPct } from '../utils/format'
 import clsx from 'clsx'
 
 export default function Dashboard() {
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const { 
     state, 
     getUserTeam, 
@@ -23,8 +27,20 @@ export default function Dashboard() {
     getUpcomingGames,
     getRecentGames,
     getStandings,
-    getSeasonProgress
+    getSeasonProgress,
+    saveGame
   } = useGameStore()
+  
+  const handleSave = () => {
+    setSaveStatus('saving')
+    const success = saveGame(1, 'Quick Save')
+    if (success) {
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } else {
+      setSaveStatus('idle')
+    }
+  }
   
   const team = getUserTeam()
   const players = team ? getTeamPlayers(team.id) : []
@@ -60,6 +76,30 @@ export default function Dashboard() {
         </div>
         
         <div className="flex items-center gap-6">
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            disabled={saveStatus === 'saving'}
+            className={clsx(
+              'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all',
+              saveStatus === 'saved' 
+                ? 'bg-green-600 text-white' 
+                : 'bg-surface-100 hover:bg-surface-200 text-gray-300 hover:text-white'
+            )}
+          >
+            {saveStatus === 'saved' ? (
+              <>
+                <Check size={18} />
+                Saved!
+              </>
+            ) : (
+              <>
+                <Save size={18} />
+                {saveStatus === 'saving' ? 'Saving...' : 'Save Game'}
+              </>
+            )}
+          </button>
+          
           <div className="text-right">
             <div className="text-3xl font-bold">
               <span className="text-primary">{team.wins}</span>

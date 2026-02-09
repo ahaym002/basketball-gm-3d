@@ -141,18 +141,21 @@ export default function TutorialOverlay() {
       </AnimatePresence>
 
       {/* Tutorial overlay */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isVisible && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
           >
             {/* Backdrop */}
             <div 
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-              onClick={completeTutorial}
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                completeTutorial()
+              }}
             />
 
             {/* Tutorial card */}
@@ -160,8 +163,9 @@ export default function TutorialOverlay() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
               className={clsx(
-                'relative bg-surface-50 rounded-2xl p-6 max-w-md w-full shadow-2xl border border-surface-200',
+                'relative bg-surface-50 rounded-2xl p-6 max-w-md w-full shadow-2xl border border-surface-200 pointer-events-auto',
                 step.position === 'bottom-right' && 'fixed bottom-24 right-24',
                 step.position === 'top-left' && 'fixed top-24 left-24'
               )}
