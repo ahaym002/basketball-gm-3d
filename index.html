@@ -1,68 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/basketball.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Basketball GM 3D</title>
-    <meta name="description" content="A 3D basketball game with full General Manager mode. Build your dynasty!" />
-    <style>
-      /* Loading screen */
-      #loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #1a1a2e, #16213e);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        color: white;
-        font-family: 'Segoe UI', sans-serif;
-      }
-      #loading h1 {
-        font-size: 48px;
-        margin-bottom: 20px;
-        background: linear-gradient(135deg, #ff9500, #ff6b00);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      #loading p {
-        font-size: 18px;
-        opacity: 0.7;
-      }
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255,149,0,0.3);
-        border-top-color: #ff9500;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-top: 30px;
-      }
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-    </style>
+    <meta name="description" content="Basketball GM - Build your dynasty" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Basketball GM</title>
   </head>
-  <body>
-    <div id="loading">
-      <h1>🏀 Basketball GM 3D</h1>
-      <p>Loading your arena...</p>
-      <div class="spinner"></div>
-    </div>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-    <script>
-      // Hide loading screen when game is ready
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          document.getElementById('loading').style.display = 'none';
-        }, 500);
-      });
-    </script>
+  <body class="bg-surface text-white antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
