@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore'
 import { formatCurrency, formatHeight, getRatingClass } from '../utils/format'
 import { UserMinus, ArrowUpDown, Filter } from 'lucide-react'
 import clsx from 'clsx'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 type SortKey = 'overall' | 'position' | 'age' | 'salary' | 'name'
 type SortDir = 'asc' | 'desc'
@@ -13,6 +14,10 @@ export default function Roster() {
   const [sortKey, setSortKey] = useState<SortKey>('overall')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [posFilter, setPosFilter] = useState<string>('all')
+  const [releaseConfirm, setReleaseConfirm] = useState<{ isOpen: boolean; player: any | null }>({
+    isOpen: false,
+    player: null
+  })
   
   const team = getUserTeam()
   const players = team ? getTeamPlayers(team.id) : []
@@ -186,11 +191,7 @@ export default function Roster() {
                   <td>{player.contract.years}yr</td>
                   <td className="text-right">
                     <button
-                      onClick={() => {
-                        if (confirm(`Release ${player.firstName} ${player.lastName}?`)) {
-                          releasePlayer(player.id)
-                        }
-                      }}
+                      onClick={() => setReleaseConfirm({ isOpen: true, player })}
                       className="p-1.5 rounded hover:bg-accent-red/20 text-gray-400 hover:text-accent-red transition-colors"
                       title="Release Player"
                     >
@@ -242,6 +243,25 @@ export default function Roster() {
           })}
         </div>
       </div>
+      
+      {/* Release Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={releaseConfirm.isOpen}
+        onClose={() => setReleaseConfirm({ isOpen: false, player: null })}
+        onConfirm={() => {
+          if (releaseConfirm.player) {
+            releasePlayer(releaseConfirm.player.id)
+          }
+        }}
+        title="Release Player?"
+        message={releaseConfirm.player 
+          ? `Are you sure you want to release ${releaseConfirm.player.firstName} ${releaseConfirm.player.lastName}? They will become a free agent and you'll still owe their guaranteed money.`
+          : ''
+        }
+        confirmText="Release"
+        cancelText="Keep Player"
+        variant="danger"
+      />
     </div>
   )
 }

@@ -34,6 +34,7 @@ export default function MatchView() {
     updateTactics,
     setShowTimeoutModal,
     setShowPostGameModal,
+    getBoxScore,
   } = useMatchStore();
   
   const simIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -108,8 +109,17 @@ export default function MatchView() {
   const handleGameEnd = () => {
     setShowPostGameModal(false);
     
-    // Update the game in state
-    // TODO: Integrate with gameStore to update standings
+    // Update the game in state - record the result in gameStore
+    if (matchState && gameId) {
+      const boxScore = getBoxScore();
+      const { recordGameResult } = useGameStore.getState();
+      recordGameResult(
+        gameId,
+        matchState.homeTeam.score,
+        matchState.awayTeam.score,
+        boxScore
+      );
+    }
     
     endMatch();
     navigate('/schedule');

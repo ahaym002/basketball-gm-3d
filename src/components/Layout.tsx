@@ -3,6 +3,8 @@ import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import PlayButton from './PlayButton'
 import NotificationPanel from './NotificationPanel'
+import ToastProvider from './ToastProvider'
+import TutorialOverlay from './TutorialOverlay'
 
 interface LayoutProps {
   children: ReactNode
@@ -22,6 +24,8 @@ export default function Layout({ children }: LayoutProps) {
       </div>
       <PlayButton />
       <NotificationPanel />
+      <ToastProvider />
+      <TutorialOverlay />
     </div>
   )
 }

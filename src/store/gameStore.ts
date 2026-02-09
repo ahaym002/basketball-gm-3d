@@ -41,6 +41,9 @@ interface GameStore {
   makeDraftPick: (prospectId: string) => void
   getAvailableProspects: () => DraftProspect[]
   
+  // Match integration
+  recordGameResult: (gameId: string, homeScore: number, awayScore: number, boxScore?: any) => void
+  
   // Notifications
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void
   dismissNotification: (id: string) => void
@@ -397,6 +400,122 @@ export const useGameStore = create<GameStore>()(
         const { engine } = get()
         const draftState = engine?.getDraftState()
         return draftState?.availableProspects || []
+      },
+      
+      // Record a manually played game result
+      recordGameResult: (gameId: string, homeScore: number, awayScore: number, boxScore?: any) => {
+        const { state, engine } = get()
+        if (!state || !engine) return
+        
+        // Find the game in schedule
+        const gameIndex = state.currentSeason.schedule.findIndex(g => g.id === gameId)
+        if (gameIndex < 0) return
+        
+        const game = state.currentSeason.schedule[gameIndex]
+        if (game.played) return // Already played
+        
+        // Update the game
+        game.played = true
+        game.homeScore = homeScore
+        game.awayScore = awayScore
+        if (boxScore) {
+          game.boxScore = boxScore
+        }
+        
+        // Update standings
+        const homeTeam = state.teams[game.homeTeamId]
+        const awayTeam = state.teams[game.awayTeamId]
+        
+        if (homeScore > awayScore) {
+          homeTeam.wins++
+          awayTeam.losses++
+          homeTeam.streak = homeTeam.streak >= 0 ? homeTeam.streak + 1 : 1
+          awayTeam.streak = awayTeam.streak <= 0 ? awayTeam.streak - 1 : -1
+          homeTeam.lastTenGames = ['W', ...homeTeam.lastTenGames.slice(0, 9)]
+          awayTeam.lastTenGames = ['L', ...awayTeam.lastTenGames.slice(0, 9)]
+        } else {
+          awayTeam.wins++
+          homeTeam.losses++
+          awayTeam.streak = awayTeam.streak >= 0 ? awayTeam.streak + 1 : 1
+          homeTeam.streak = homeTeam.streak <= 0 ? homeTeam.streak - 1 : -1
+          awayTeam.lastTenGames = ['W', ...awayTeam.lastTenGames.slice(0, 9)]
+          homeTeam.lastTenGames = ['L', ...homeTeam.lastTenGames.slice(0, 9)]
+        }
+        
+        // Update player stats if box score provided
+        if (boxScore) {
+          const year = state.currentSeason.year
+          const updateStats = (stats: any[]) => {
+            for (const playerStats of stats) {
+              const player = state.players[playerStats.playerId]
+              if (!player) continue
+              
+              if (!player.seasonStats[year]) {
+                player.seasonStats[year] = {
+                  gamesPlayed: 0,
+                  gamesStarted: 0,
+                  minutesPerGame: 0,
+                  points: 0,
+                  rebounds: 0,
+                  assists: 0,
+                  steals: 0,
+                  blocks: 0,
+                  turnovers: 0,
+                  fieldGoalsMade: 0,
+                  fieldGoalsAttempted: 0,
+                  threePointersMade: 0,
+                  threePointersAttempted: 0,
+                  freeThrowsMade: 0,
+                  freeThrowsAttempted: 0,
+                  personalFouls: 0,
+                  plusMinus: 0
+                }
+              }
+              
+              const seasonStats = player.seasonStats[year]
+              seasonStats.gamesPlayed++
+              if (playerStats.minutes >= 20) seasonStats.gamesStarted++
+              seasonStats.points += playerStats.points || 0
+              seasonStats.rebounds += playerStats.rebounds || 0
+              seasonStats.assists += playerStats.assists || 0
+              seasonStats.steals += playerStats.steals || 0
+              seasonStats.blocks += playerStats.blocks || 0
+              seasonStats.turnovers += playerStats.turnovers || 0
+              seasonStats.fieldGoalsMade += playerStats.fgm || 0
+              seasonStats.fieldGoalsAttempted += playerStats.fga || 0
+              seasonStats.threePointersMade += playerStats.tpm || 0
+              seasonStats.threePointersAttempted += playerStats.tpa || 0
+              seasonStats.freeThrowsMade += playerStats.ftm || 0
+              seasonStats.freeThrowsAttempted += playerStats.fta || 0
+              seasonStats.personalFouls += playerStats.fouls || 0
+              seasonStats.plusMinus += playerStats.plusMinus || 0
+              seasonStats.minutesPerGame = (seasonStats.minutesPerGame * (seasonStats.gamesPlayed - 1) + playerStats.minutes) / seasonStats.gamesPlayed
+            }
+          }
+          
+          if (boxScore.home) updateStats(boxScore.home)
+          if (boxScore.away) updateStats(boxScore.away)
+        }
+        
+        // Show notification
+        const userTeamId = state.userTeamId
+        const isUserGame = game.homeTeamId === userTeamId || game.awayTeamId === userTeamId
+        
+        if (isUserGame) {
+          const isHome = game.homeTeamId === userTeamId
+          const userScore = isHome ? homeScore : awayScore
+          const oppScore = isHome ? awayScore : homeScore
+          const won = userScore > oppScore
+          const opponent = state.teams[isHome ? game.awayTeamId : game.homeTeamId]
+          
+          get().addNotification({
+            type: won ? 'success' : 'warning',
+            title: won ? 'Victory!' : 'Defeat',
+            message: `Final: ${userScore}-${oppScore} ${isHome ? 'vs' : '@'} ${opponent?.city} ${opponent?.name}`
+          })
+        }
+        
+        set({ state: { ...state } })
       },
 
       // Add a notification

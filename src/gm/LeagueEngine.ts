@@ -234,13 +234,29 @@ export class LeagueEngine {
       return [];
     }
     
-    // Find games for current day
-    const todayGames = season.schedule.filter(g => 
-      !g.played && 
-      !g.isPlayoff &&
-      g.date.year === season.year &&
-      g.date.month === this.getCurrentMonth() &&
-      g.date.day === season.day
+    // Find next unplayed games (instead of matching exact day)
+    // Sort by date and take the next batch
+    const unplayedGames = season.schedule
+      .filter(g => !g.played && !g.isPlayoff)
+      .sort((a, b) => {
+        if (a.date.year !== b.date.year) return a.date.year - b.date.year;
+        if (a.date.month !== b.date.month) return a.date.month - b.date.month;
+        return a.date.day - b.date.day;
+      });
+    
+    if (unplayedGames.length === 0) {
+      // No more regular season games - start playoffs
+      this.startPlayoffs();
+      this.notifyChange();
+      return [];
+    }
+    
+    // Get the date of the next game and find all games on that day
+    const nextGameDate = unplayedGames[0].date;
+    const todayGames = unplayedGames.filter(g => 
+      g.date.year === nextGameDate.year &&
+      g.date.month === nextGameDate.month &&
+      g.date.day === nextGameDate.day
     );
     
     const playedGames: Game[] = [];
@@ -280,12 +296,9 @@ export class LeagueEngine {
       }
     }
     
-    // Advance day
+    // Advance day counter
     season.day++;
-    if (season.day > 28) {
-      season.day = 1;
-      // Would advance month here
-    }
+    season.week = Math.ceil(season.day / 7);
     
     // Check for end of regular season
     const regularSeasonGames = season.schedule.filter(g => !g.isPlayoff);
